@@ -1,3 +1,8 @@
+variable "appsvpc_id" {}
+variable "internal_tableau_cidr_block_az2" {}
+variable "az2" {}
+
+
 variable "naming_suffix" {
   default     = false
   description = "Naming suffix for tags, value passed from dq-tf-apps"
