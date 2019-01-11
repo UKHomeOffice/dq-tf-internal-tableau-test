@@ -58,6 +58,11 @@ variable "dq_internal_dashboard_subnet_cidr" {
   description = "DQ Apps CIDR as per IP Addresses and CIDR blocks document"
 }
 
+variable "dq_internal_dashboard_subnet_cidr_az2" {
+  default     = "10.1.13.0/24"
+  description = "DQ Apps CIDR as per IP Addresses and CIDR blocks document"
+}
+
 variable "dq_internal_dashboard_instance_ip" {
   description = "IP address of EC2 instance"
   default     = "10.1.12.11"
@@ -80,6 +85,11 @@ variable "route_table_id" {
 
 variable "az" {
   default     = "eu-west-2a"
+  description = "Default availability zone for the subnet."
+}
+
+variable "az2" {
+  default     = "eu-west-2b"
   description = "Default availability zone for the subnet."
 }
 
