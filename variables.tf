@@ -1,4 +1,5 @@
 variable "appsvpc_id" {}
+variable "opssubnet_cidr_block" {}
 
 variable "naming_suffix" {
   default     = false

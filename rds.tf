@@ -52,7 +52,7 @@ resource "aws_security_group" "internal_tableau_db" {
 
     cidr_blocks = [
       #"${var.data_pipe_apps_cidr_block}",
-      #"${var.opssubnet_cidr_block}",
+      "${var.opssubnet_cidr_block}",
       #"${var.data_feeds_cidr_block}",
       "${var.peering_cidr_block}",
     ]
@@ -70,7 +70,7 @@ resource "aws_security_group" "internal_tableau_db" {
 }
 
 resource "aws_db_instance" "postgres" {
-  identifier              = "internal_tableau-postgres-${local.naming_suffix}"
+  identifier              = "int-tableau-postgres-${local.naming_suffix}"
   allocated_storage       = 10
   storage_type            = "gp2"
   engine                  = "postgres"
