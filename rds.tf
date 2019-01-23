@@ -79,7 +79,7 @@ resource "aws_security_group_rule" "allow_db_out" {
   from_port       = 0
   to_port         = 0
   protocol        = -1
-  cidr_blocks = ["0.0.0.0/0"]
+  cidr_blocks     = ["0.0.0.0/0"]
 
   security_group_id = "${aws_security_group.internal_tableau_db.id}"
 }
@@ -93,6 +93,8 @@ resource "aws_db_instance" "postgres" {
   instance_class          = "db.t2.small"
   username                = "${random_string.username.result}"
   password                = "${random_string.password.result}"
+  name                    = "${var.database_name}"
+  port                    = "${var.port}" 
   backup_window           = "00:00-01:00"
   maintenance_window      = "mon:01:30-mon:02:30"
   backup_retention_period = 14
