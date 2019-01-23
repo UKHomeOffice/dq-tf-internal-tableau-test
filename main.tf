@@ -137,7 +137,7 @@ resource "aws_security_group_rule" "allow_rdp" {
 
 resource "aws_security_group_rule" "allow_lambda" {
   type            = "ingress"
-  description     = "Posrgres from the Lambda subnet"
+  description     = "Postgres from the Lambda subnet"
   from_port       = "${var.rds_from_port}"
   to_port         = "${var.rds_to_port}"
   protocol        = "${var.rds_protocol}"
