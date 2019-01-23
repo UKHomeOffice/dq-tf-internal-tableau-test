@@ -36,6 +36,21 @@ variable "RDP_protocol" {
   description = "Protocol for RDP traffic"
 }
 
+variable "rds_from_port" {
+  default     = 5432
+  description = "From port for Postgres traffic"
+}
+
+variable "rds_to_port" {
+  default     = 5432
+  description = "To port for Postgres traffic"
+}
+
+variable "rds_protocol" {
+  default     = "tcp"
+  description = "Protocol for Postgres traffic"
+}
+
 variable "acp_prod_ingress_cidr" {
   default     = "10.5.0.0/16"
   description = "ACP Prod CIDR as per IP Addresses and CIDR blocks document"
@@ -69,6 +84,16 @@ variable "dq_internal_dashboard_instance_ip" {
 variable "dq_internal_dashboard_blue_instance_ip" {
   description = "IP address of EC2 instance"
   default     = "10.1.12.12"
+}
+
+variable "dq_lambda_subnet_cidr" {
+  default     = "10.1.42.0/24"
+  description = "Dedicated subnet for Lambda ENIs"
+}
+
+variable "dq_lambda_subnet_cidr_az2" {
+  default     = "10.1.43.0/24"
+  description = "Dedicated subnet for Lambda ENIs"
 }
 
 variable "apps_vpc_id" {
