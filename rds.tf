@@ -106,7 +106,7 @@ resource "aws_db_instance" "postgres" {
   vpc_security_group_ids = ["${aws_security_group.internal_tableau_db.id}"]
 
   lifecycle {
-    prevent_destroy = true
+    prevent_destroy = false 
   }
 
   tags {
