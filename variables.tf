@@ -4,7 +4,7 @@ variable "naming_suffix" {
 }
 
 variable "database_name" {
-  default     = "internal_tableau" 
+  default     = "internal_tableau"
   description = "RDS Postgres database name"
 }
 
@@ -131,10 +131,13 @@ variable "key_name" {
 #  description = "S3 archive bucket name"
 #}
 
+
 #variable "s3_archive_bucket_key" {
 #  description = "S3 archive bucket KMS key"
 #}
 
+
 #variable "s3_archive_bucket_name" {
 #  description = "Name of archive bucket"
 #}
+

@@ -129,15 +129,18 @@ resource "aws_security_group" "sgrp" {
   #  to_port   = "${var.SSH_to_port}"
   #  protocol  = "${var.SSH_protocol}"
 
+
   #  cidr_blocks = [
   #    "${var.dq_ops_ingress_cidr}",
   #  ]
   #}
 
+
   #ingress {
   #  from_port = "${var.TSM_from_port}"
   #  to_port   = "${var.TSM_to_port}"
   #  protocol  = "${var.http_protocol}"
+
 
   #  cidr_blocks = [
   #    "${var.dq_ops_ingress_cidr}",
@@ -151,17 +154,15 @@ resource "aws_security_group" "sgrp" {
 
     cidr_blocks = [
       "${var.dq_lambda_subnet_cidr}",
-    "${var.dq_lambda_subnet_cidr_az2}",
+      "${var.dq_lambda_subnet_cidr_az2}",
     ]
   }
-
   egress {
     from_port   = 0
     to_port     = 0
     protocol    = -1
     cidr_blocks = ["0.0.0.0/0"]
   }
-
   tags {
     Name = "sg-${local.naming_suffix}"
   }
