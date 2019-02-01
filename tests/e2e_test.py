@@ -76,16 +76,16 @@ class TestE2E(unittest.TestCase):
         self.assertEqual(self.result["root_modules"]["aws_security_group.sgrp"]["tags.Name"], "sg-internal-tableau-apps-preprod-dq")
 
     def test_db_subnet_group_tags(self):
-        self.assertEqual(self.result["root_modules"]["aws_db_subnet_group.rds"]["tags.Name"], "rds-subnet-group-apps-preprod-dq")
+        self.assertEqual(self.result["root_modules"]["aws_db_subnet_group.rds"]["tags.Name"], "rds-subnet-group-internal-tableau-apps-preprod-dq")
 
     def test_aws_subnet_tags(self):
-        self.assertEqual(self.result["root_modules"]["aws_subnet.internal_tableau_az2"]["tags.Name"], "rds-subnet-group-apps-preprod-dq")
+        self.assertEqual(self.result["root_modules"]["aws_subnet.internal_tableau_az2"]["tags.Name"], "az2-subnet-internal-tableau-apps-preprod-dq")
 
     def test_aws_security_group_tags(self):
-        self.assertEqual(self.result["root_modules"]["aws_security_group.internal_tableau_db"]["tags.Name"], "sg-internal-tableau-db-apps-preprod-dq")
+        self.assertEqual(self.result["root_modules"]["aws_security_group.internal_tableau_db"]["tags.Name"], "sg-db-internal-tableau-apps-preprod-dq")
 
     def test_rds_tags(self):
-        self.assertEqual(self.result["root_modules"]["aws_db_instance.postgres"]["tags.Name"], "rds-internal-tableau-postgres-apps-preprod-dq")
+        self.assertEqual(self.result["root_modules"]["aws_db_instance.postgres"]["tags.Name"], "rds-postgres-internal-tableau-apps-preprod-dq")
 
     #def test_ec2_tags(self):
     #    self.assertEqual(self.result["root_modules"]["aws_instance.int_tableau"]["tags.Name"], "ec2-internal-tableau-apps-preprod-dq")
