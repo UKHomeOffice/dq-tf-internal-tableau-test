@@ -101,7 +101,7 @@ resource "aws_db_instance" "postgres" {
   }
 
   tags {
-    Name = "internal_tableau-postgres-${local.naming_suffix}"
+    Name = "rds-internal_tableau-postgres-${local.naming_suffix}"
   }
 }
 
