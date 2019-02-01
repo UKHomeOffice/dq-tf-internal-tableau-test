@@ -71,7 +71,7 @@ resource "aws_security_group" "internal_tableau_db" {
   }
 
   tags {
-    Name = "sg-${local.naming_suffix}"
+    Name = "sg-internal-tableau-db-${local.naming_suffix}"
   }
 }
 
