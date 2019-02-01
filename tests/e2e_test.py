@@ -81,7 +81,7 @@ class TestE2E(unittest.TestCase):
     def test_aws_subnet_tags(self):
         self.assertEqual(self.result["root_modules"]["aws_subnet.internal_tableau_az2"]["tags.Name"], "az2-subnet-internal-tableau-apps-preprod-dq")
 
-    def test_aws_security_group_tags(self):
+    def test_db_security_group_tags(self):
         self.assertEqual(self.result["root_modules"]["aws_security_group.internal_tableau_db"]["tags.Name"], "sg-db-internal-tableau-apps-preprod-dq")
 
     def test_rds_tags(self):
