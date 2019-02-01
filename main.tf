@@ -101,60 +101,68 @@ resource "aws_route_table_association" "internal_tableau_rt_association" {
 resource "aws_security_group" "sgrp" {
   vpc_id = "${var.apps_vpc_id}"
 
+  ingress {
+    from_port = "${var.http_from_port}"
+    to_port   = "${var.http_to_port}"
+    protocol  = "${var.http_protocol}"
+
+    cidr_blocks = [
+      "${var.dq_ops_ingress_cidr}",
+      "${var.acp_prod_ingress_cidr}",
+      "${var.peering_cidr_block}",
+    ]
+  }
+
+  ingress {
+    from_port = "${var.RDP_from_port}"
+    to_port   = "${var.RDP_to_port}"
+    protocol  = "${var.RDP_protocol}"
+
+    cidr_blocks = [
+      "${var.dq_ops_ingress_cidr}",
+      "${var.peering_cidr_block}",
+    ]
+  }
+
+  #ingress {
+  #  from_port = "${var.SSH_from_port}"
+  #  to_port   = "${var.SSH_to_port}"
+  #  protocol  = "${var.SSH_protocol}"
+
+  #  cidr_blocks = [
+  #    "${var.dq_ops_ingress_cidr}",
+  #  ]
+  #}
+
+  #ingress {
+  #  from_port = "${var.TSM_from_port}"
+  #  to_port   = "${var.TSM_to_port}"
+  #  protocol  = "${var.http_protocol}"
+
+  #  cidr_blocks = [
+  #    "${var.dq_ops_ingress_cidr}",
+  #  ]
+  #}
+
+  ingress {
+    from_port = "${var.rds_from_port}"
+    to_port   = "${var.rds_to_port}"
+    protocol  = "${var.rds_protocol}"
+
+    cidr_blocks = [
+      "${var.dq_lambda_subnet_cidr}",
+    "${var.dq_lambda_subnet_cidr_az2}",
+    ]
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = -1
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
   tags {
     Name = "sg-${local.naming_suffix}"
   }
-}
-
-resource "aws_security_group_rule" "allow_http" {
-  type            = "ingress"
-  description     = "HTTP"
-  from_port       = "${var.http_from_port}"
-  to_port         = "${var.http_to_port}"
-  protocol        = "${var.http_protocol}"
-  cidr_blocks   = [
-    "${var.dq_ops_ingress_cidr}",
-    "${var.acp_prod_ingress_cidr}",
-    "${var.peering_cidr_block}",
-  ]
-
-  security_group_id = "${aws_security_group.sgrp.id}"
-}
-
-resource "aws_security_group_rule" "allow_rdp" {
-  type            = "ingress"
-  description     = "RDP"
-  from_port       = "${var.RDP_from_port}"
-  to_port         = "${var.RDP_to_port}"
-  protocol        = "${var.RDP_protocol}"
-  cidr_blocks = [
-    "${var.dq_ops_ingress_cidr}",
-    "${var.peering_cidr_block}",
-  ]
-
-  security_group_id = "${aws_security_group.sgrp.id}"
-}
-
-resource "aws_security_group_rule" "allow_lambda" {
-  type            = "ingress"
-  description     = "Postgres from the Lambda subnet"
-  from_port       = "${var.rds_from_port}"
-  to_port         = "${var.rds_to_port}"
-  protocol        = "${var.rds_protocol}"
-  cidr_blocks = [
-    "${var.dq_lambda_subnet_cidr}",
-    "${var.dq_lambda_subnet_cidr_az2}",
-  ]
-
-  security_group_id = "${aws_security_group.sgrp.id}"
-}
-
-resource "aws_security_group_rule" "allow_out" {
-  type            = "egress"
-  from_port       = 0
-  to_port         = 0
-  protocol        = -1
-  cidr_blocks = ["0.0.0.0/0"]
-
-  security_group_id = "${aws_security_group.sgrp.id}"
 }
