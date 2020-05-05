@@ -76,15 +76,15 @@ resource "aws_security_group" "internal_tableau_db" {
 }
 
 resource "aws_db_instance" "postgres" {
-  identifier          = "postgres-${local.naming_suffix}"
-  snapshot_identifier = "int-tableau-postgres-internal-tableau-apps-test-dq-final-snapshot"
-  allocated_storage   = 10
-  storage_type        = "gp2"
-  engine              = "postgres"
-  engine_version      = "10.6"
-  instance_class      = "db.t3.small"
-  # username                = "${random_string.username.result}"
-  # password                = "${random_string.password.result}"
+  identifier              = "postgres-${local.naming_suffix}"
+  snapshot_identifier     = "int-tableau-postgres-internal-tableau-apps-test-dq-final-snapshot"
+  allocated_storage       = 10
+  storage_type            = "gp2"
+  engine                  = "postgres"
+  engine_version          = "10.6"
+  instance_class          = "db.t3.small"
+  username                = "${random_string.username.result}"
+  password                = "${random_string.password.result}"
   name                    = "${var.database_name}"
   port                    = "${var.port}"
   backup_window           = "00:00-01:00"
