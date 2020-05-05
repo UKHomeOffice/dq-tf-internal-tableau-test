@@ -1,9 +1,9 @@
-# locals {
-#   naming_suffix           = "internal-tableau-${var.naming_suffix}"
-#   naming_suffix_linux     = "internal-tableau-linux-${var.naming_suffix}"
-#   naming_suffix_wip       = "tableau-${var.naming_suffix}"
-#   naming_suffix_wip_linux = "tableau-linux-${var.naming_suffix}"
-# }
+locals {
+  naming_suffix           = "internal-tableau-${var.naming_suffix}"
+  naming_suffix_linux     = "internal-tableau-linux-${var.naming_suffix}"
+  naming_suffix_wip       = "tableau-${var.naming_suffix}"
+  naming_suffix_wip_linux = "tableau-linux-${var.naming_suffix}"
+}
 #
 # resource "aws_instance" "int_tableau_linux" {
 #   count                       = "${var.environment == "prod" ? "2" : "1"}" # Allow different instance count in prod and notprod
@@ -574,96 +574,95 @@
 #   }
 # }
 #
-# resource "aws_subnet" "subnet" {
-#   vpc_id            = "${var.apps_vpc_id}"
-#   cidr_block        = "${var.dq_internal_dashboard_subnet_cidr}"
-#   availability_zone = "${var.az}"
-#
-#   tags {
-#     Name = "subnet-${local.naming_suffix}"
-#   }
-# }
-#
-# resource "aws_route_table_association" "internal_tableau_rt_association" {
-#   subnet_id      = "${aws_subnet.subnet.id}"
-#   route_table_id = "${var.route_table_id}"
-# }
-#
-# resource "aws_security_group" "sgrp" {
-#   vpc_id = "${var.apps_vpc_id}"
-#
-#   ingress {
-#     from_port = "${var.http_from_port}"
-#     to_port   = "${var.http_to_port}"
-#     protocol  = "${var.http_protocol}"
-#
-#     cidr_blocks = [
-#       "${var.dq_ops_ingress_cidr}",
-#       "${var.acp_prod_ingress_cidr}",
-#       "${var.peering_cidr_block}",
-#     ]
-#   }
-#
-#   ingress {
-#     from_port = "${var.SSH_from_port}"
-#     to_port   = "${var.SSH_to_port}"
-#     protocol  = "${var.SSH_protocol}"
-#
-#     cidr_blocks = [
-#       "${var.dq_ops_ingress_cidr}",
-#     ]
-#   }
-#
-#   ingress {
-#     from_port = "${var.TSM_from_port}"
-#     to_port   = "${var.TSM_to_port}"
-#     protocol  = "${var.http_protocol}"
-#
-#     cidr_blocks = [
-#       "${var.dq_ops_ingress_cidr}",
-#     ]
-#   }
-#
-#   ingress {
-#     from_port = "${var.TAB_DB_to_port}"
-#     to_port   = "${var.TAB_DB_to_port}"
-#     protocol  = "${var.TAB_DB_protocol}"
-#
-#     cidr_blocks = [
-#       "${var.dq_ops_ingress_cidr}",
-#     ]
-#   }
-#
-#   ingress {
-#     from_port = "${var.rds_from_port}"
-#     to_port   = "${var.rds_to_port}"
-#     protocol  = "${var.rds_protocol}"
-#
-#     cidr_blocks = [
-#       "${var.dq_lambda_subnet_cidr}",
-#       "${var.dq_lambda_subnet_cidr_az2}",
-#     ]
-#   }
-#
-#   ingress {
-#     from_port = "${var.SSH_from_port}"
-#     to_port   = "${var.SSH_to_port}"
-#     protocol  = "${var.SSH_protocol}"
-#
-#     cidr_blocks = [
-#       "${var.dq_lambda_subnet_cidr}",
-#       "${var.dq_lambda_subnet_cidr_az2}",
-#     ]
-#   }
-#
-#   egress {
-#     from_port   = 0
-#     to_port     = 0
-#     protocol    = -1
-#     cidr_blocks = ["0.0.0.0/0"]
-#   }
-#
-#   tags {
-#     Name = "sg-${local.naming_suffix}"
-#   }
-# }
+resource "aws_subnet" "subnet" {
+  vpc_id            = "${var.apps_vpc_id}"
+  cidr_block        = "${var.dq_internal_dashboard_subnet_cidr}"
+  availability_zone = "${var.az}"
+
+  tags {
+    Name = "subnet-${local.naming_suffix}"
+  }
+}
+
+resource "aws_route_table_association" "internal_tableau_rt_association" {
+  subnet_id      = "${aws_subnet.subnet.id}"
+  route_table_id = "${var.route_table_id}"
+}
+
+resource "aws_security_group" "sgrp" {
+  vpc_id = "${var.apps_vpc_id}"
+
+  ingress {
+    from_port = "${var.http_from_port}"
+    to_port   = "${var.http_to_port}"
+    protocol  = "${var.http_protocol}"
+
+    cidr_blocks = [
+      "${var.dq_ops_ingress_cidr}",
+      "${var.peering_cidr_block}",
+    ]
+  }
+
+  ingress {
+    from_port = "${var.SSH_from_port}"
+    to_port   = "${var.SSH_to_port}"
+    protocol  = "${var.SSH_protocol}"
+
+    cidr_blocks = [
+      "${var.dq_ops_ingress_cidr}",
+    ]
+  }
+
+  ingress {
+    from_port = "${var.TSM_from_port}"
+    to_port   = "${var.TSM_to_port}"
+    protocol  = "${var.http_protocol}"
+
+    cidr_blocks = [
+      "${var.dq_ops_ingress_cidr}",
+    ]
+  }
+
+  ingress {
+    from_port = "${var.TAB_DB_to_port}"
+    to_port   = "${var.TAB_DB_to_port}"
+    protocol  = "${var.TAB_DB_protocol}"
+
+    cidr_blocks = [
+      "${var.dq_ops_ingress_cidr}",
+    ]
+  }
+
+  ingress {
+    from_port = "${var.rds_from_port}"
+    to_port   = "${var.rds_to_port}"
+    protocol  = "${var.rds_protocol}"
+
+    cidr_blocks = [
+      "${var.dq_lambda_subnet_cidr}",
+      "${var.dq_lambda_subnet_cidr_az2}",
+    ]
+  }
+
+  ingress {
+    from_port = "${var.SSH_from_port}"
+    to_port   = "${var.SSH_to_port}"
+    protocol  = "${var.SSH_protocol}"
+
+    cidr_blocks = [
+      "${var.dq_lambda_subnet_cidr}",
+      "${var.dq_lambda_subnet_cidr_az2}",
+    ]
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = -1
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags {
+    Name = "sg-${local.naming_suffix}"
+  }
+}

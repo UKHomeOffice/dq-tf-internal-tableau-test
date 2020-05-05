@@ -73,10 +73,10 @@ variable "rds_protocol" {
   description = "Protocol for Postgres traffic"
 }
 
-# variable "acp_prod_ingress_cidr" {
-#   default     = "10.5.0.0/16"
-#   description = "ACP Prod CIDR as per IP Addresses and CIDR blocks document"
-# }
+variable "acp_prod_ingress_cidr" {
+  default     = "10.5.0.0/16"
+  description = "ACP Prod CIDR as per IP Addresses and CIDR blocks document"
+}
 
 variable "dq_ops_ingress_cidr" {
   default     = "10.2.0.0/16"

@@ -371,4 +371,4 @@ resource "aws_ssm_parameter" "rds_internal_tableau_postgres_endpoint" {
 #   name  = "rds_tableau_wip_endpoint"
 #   type  = "String"
 #   value = "${aws_db_instance.internal_reporting_snapshot_wip.endpoint}"
-}
+# }

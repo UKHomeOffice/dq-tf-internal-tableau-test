@@ -70,10 +70,10 @@ class TestE2E(unittest.TestCase):
         self.assertEqual(self.result["root_modules"]["aws_security_group.internal_tableau_db"]["tags.Name"], "sg-db-internal-tableau-apps-preprod-dq")
 
     def test_rds_change_switch(self):
-        self.assertEqual(self.result["root_modules"]["aws_db_instance.postgres"]["apply_immediately"], "false")
+        self.assertEqual(self.result["root_modules"]["aws_db_instance.postgres"]["apply_immediately"], "true")
 
     def test_rds_disk_size(self):
-        self.assertEqual(self.result["root_modules"]["aws_db_instance.postgres"]["allocated_storage"], "3300")
+        self.assertEqual(self.result["root_modules"]["aws_db_instance.postgres"]["allocated_storage"], "350")
 
     def test_rds_deletion_protection(self):
         self.assertEqual(self.result["root_modules"]["aws_db_instance.postgres"]["deletion_protection"], "true")
@@ -107,51 +107,51 @@ class TestE2E(unittest.TestCase):
 
     def test_iam_role(self):
         self.assertEqual(self.result["root_modules"]["aws_iam_role.postgres"]["name"], "rds-postgres-role-internal-tableau-apps-preprod-dq")
-
-    def test_staging_instance_tag(self):
-        self.assertEqual(self.result["root_modules"]["aws_instance.int_tableau_linux_staging"]["tags.Name"], "ec2-staging-internal-tableau-apps-preprod-dq")
-
-    def test_wip_instance_tag(self):
-        self.assertEqual(self.result["root_modules"]["aws_instance.tableau_linux_wip"]["tags.Name"], "ec2-wip-tableau-linux-apps-preprod-dq")
-
-    def test_rds_staging_tags(self):
-        self.assertEqual(self.result["root_modules"]["aws_db_instance.internal_reporting_snapshot_stg"]["tags.Name"], "stg-postgres-internal-tableau-apps-preprod-dq")
-
-    def test_rds_wip_tags(self):
-        self.assertEqual(self.result["root_modules"]["aws_db_instance.internal_reporting_snapshot_wip"]["tags.Name"], "wip-postgres-tableau-apps-preprod-dq")
-
-    def test_rds_staging_tags(self):
-        self.assertEqual(self.result["root_modules"]["aws_db_instance.internal_reporting_snapshot_stg"]["tags.Name"], "stg-postgres-internal-tableau-apps-preprod-dq")
-
-    def test_rds_postgres_backup_window(self):
-        self.assertEqual(self.result["root_modules"]["aws_db_instance.postgres"]["backup_window"], "00:00-01:00")
-
-    def test_rds_postgres_stg_backup_window(self):
-        self.assertEqual(self.result["root_modules"]["aws_db_instance.internal_reporting_snapshot_stg"]["backup_window"], "00:00-01:00")
-
-    def test_rds_postgres_wip_backup_window(self):
-        self.assertEqual(self.result["root_modules"]["aws_db_instance.internal_reporting_snapshot_wip"]["backup_window"], "00:00-01:00")
-
-    def test_rds_postgres_maintenance_window(self):
-        self.assertEqual(self.result["root_modules"]["aws_db_instance.postgres"]["maintenance_window"], "mon:01:00-mon:02:00")
-
-    def test_rds_postgres_stg_maintenance_window(self):
-        self.assertEqual(self.result["root_modules"]["aws_db_instance.internal_reporting_snapshot_stg"]["maintenance_window"], "tue:01:00-tue:02:00")
-
-    def test_rds_postgres_wip_maintenance_window(self):
-        self.assertEqual(self.result["root_modules"]["aws_db_instance.internal_reporting_snapshot_wip"]["maintenance_window"], "tue:01:00-tue:02:00")
-
-    def test_rds_postgres_stg_engine_version(self):
-        self.assertEqual(self.result["root_modules"]["aws_db_instance.internal_reporting_snapshot_stg"]["engine_version"], "10.10")
-
-    def test_rds_postgres_wip_engine_version(self):
-        self.assertEqual(self.result["root_modules"]["aws_db_instance.internal_reporting_snapshot_wip"]["engine_version"], "10.6")
-
-    def test_rds_postgres_stg_apply_immediately(self):
-        self.assertEqual(self.result["root_modules"]["aws_db_instance.internal_reporting_snapshot_stg"]["apply_immediately"], "false")
-
-    def test_rds_postgres_wip_apply_immediately(self):
-        self.assertEqual(self.result["root_modules"]["aws_db_instance.internal_reporting_snapshot_wip"]["apply_immediately"], "false")
+    #
+    # def test_staging_instance_tag(self):
+    #     self.assertEqual(self.result["root_modules"]["aws_instance.int_tableau_linux_staging"]["tags.Name"], "ec2-staging-internal-tableau-apps-preprod-dq")
+    #
+    # def test_wip_instance_tag(self):
+    #     self.assertEqual(self.result["root_modules"]["aws_instance.tableau_linux_wip"]["tags.Name"], "ec2-wip-tableau-linux-apps-preprod-dq")
+    #
+    # def test_rds_staging_tags(self):
+    #     self.assertEqual(self.result["root_modules"]["aws_db_instance.internal_reporting_snapshot_stg"]["tags.Name"], "stg-postgres-internal-tableau-apps-preprod-dq")
+    #
+    # def test_rds_wip_tags(self):
+    #     self.assertEqual(self.result["root_modules"]["aws_db_instance.internal_reporting_snapshot_wip"]["tags.Name"], "wip-postgres-tableau-apps-preprod-dq")
+    #
+    # def test_rds_staging_tags(self):
+    #     self.assertEqual(self.result["root_modules"]["aws_db_instance.internal_reporting_snapshot_stg"]["tags.Name"], "stg-postgres-internal-tableau-apps-preprod-dq")
+    #
+    # def test_rds_postgres_backup_window(self):
+    #     self.assertEqual(self.result["root_modules"]["aws_db_instance.postgres"]["backup_window"], "00:00-01:00")
+    #
+    # def test_rds_postgres_stg_backup_window(self):
+    #     self.assertEqual(self.result["root_modules"]["aws_db_instance.internal_reporting_snapshot_stg"]["backup_window"], "00:00-01:00")
+    #
+    # def test_rds_postgres_wip_backup_window(self):
+    #     self.assertEqual(self.result["root_modules"]["aws_db_instance.internal_reporting_snapshot_wip"]["backup_window"], "00:00-01:00")
+    #
+    # def test_rds_postgres_maintenance_window(self):
+    #     self.assertEqual(self.result["root_modules"]["aws_db_instance.postgres"]["maintenance_window"], "mon:01:00-mon:02:00")
+    #
+    # def test_rds_postgres_stg_maintenance_window(self):
+    #     self.assertEqual(self.result["root_modules"]["aws_db_instance.internal_reporting_snapshot_stg"]["maintenance_window"], "tue:01:00-tue:02:00")
+    #
+    # def test_rds_postgres_wip_maintenance_window(self):
+    #     self.assertEqual(self.result["root_modules"]["aws_db_instance.internal_reporting_snapshot_wip"]["maintenance_window"], "tue:01:00-tue:02:00")
+    #
+    # def test_rds_postgres_stg_engine_version(self):
+    #     self.assertEqual(self.result["root_modules"]["aws_db_instance.internal_reporting_snapshot_stg"]["engine_version"], "10.10")
+    #
+    # def test_rds_postgres_wip_engine_version(self):
+    #     self.assertEqual(self.result["root_modules"]["aws_db_instance.internal_reporting_snapshot_wip"]["engine_version"], "10.6")
+    #
+    # def test_rds_postgres_stg_apply_immediately(self):
+    #     self.assertEqual(self.result["root_modules"]["aws_db_instance.internal_reporting_snapshot_stg"]["apply_immediately"], "false")
+    #
+    # def test_rds_postgres_wip_apply_immediately(self):
+    #     self.assertEqual(self.result["root_modules"]["aws_db_instance.internal_reporting_snapshot_wip"]["apply_immediately"], "false")
 
     def test_rds_postgres_postgres_engine_version(self):
         self.assertEqual(self.result["root_modules"]["aws_db_instance.postgres"]["engine_version"], "10.10")
