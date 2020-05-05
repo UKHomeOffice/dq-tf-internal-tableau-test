@@ -3,16 +3,6 @@ variable "naming_suffix" {
   description = "Naming suffix for tags, value passed from dq-tf-apps"
 }
 
-variable "database_name" {
-  default     = "internal_tableau"
-  description = "RDS Postgres database name"
-}
-
-variable "port" {
-  default     = "5432"
-  description = "RDS Postgres port access"
-}
-
 variable "http_from_port" {
   default     = 80
   description = "From port for HTTPS traffic"
@@ -28,19 +18,44 @@ variable "http_protocol" {
   description = "Protocol for HTTPS traffic"
 }
 
-variable "RDP_from_port" {
-  default     = 3389
-  description = "From port for RDP traffic"
+variable "SSH_from_port" {
+  default     = 22
+  description = "From port for SSH traffic"
 }
 
-variable "RDP_to_port" {
-  default     = 3389
-  description = "To port for RDP traffic"
+variable "SSH_to_port" {
+  default     = 22
+  description = "To port for SSH traffic"
 }
 
-variable "RDP_protocol" {
+variable "SSH_protocol" {
   default     = "tcp"
-  description = "Protocol for RDP traffic"
+  description = "Protocol for SSH traffic"
+}
+
+variable "TSM_from_port" {
+  default     = 8850
+  description = "From port for TSM traffic"
+}
+
+variable "TSM_to_port" {
+  default     = 8850
+  description = "To port for TSM traffic"
+}
+
+variable "TAB_DB_from_port" {
+  default     = 8060
+  description = "From port for Tableau Metadata Database traffic"
+}
+
+variable "TAB_DB_to_port" {
+  default     = 8060
+  description = "To port for Tableau Metadata Database traffic"
+}
+
+variable "TAB_DB_protocol" {
+  default     = "tcp"
+  description = "Protocol for Tableau Metadata Database traffic"
 }
 
 variable "rds_from_port" {
@@ -58,10 +73,10 @@ variable "rds_protocol" {
   description = "Protocol for Postgres traffic"
 }
 
-variable "acp_prod_ingress_cidr" {
-  default     = "10.5.0.0/16"
-  description = "ACP Prod CIDR as per IP Addresses and CIDR blocks document"
-}
+# variable "acp_prod_ingress_cidr" {
+#   default     = "10.5.0.0/16"
+#   description = "ACP Prod CIDR as per IP Addresses and CIDR blocks document"
+# }
 
 variable "dq_ops_ingress_cidr" {
   default     = "10.2.0.0/16"
@@ -83,14 +98,15 @@ variable "dq_internal_dashboard_subnet_cidr_az2" {
   description = "DQ Apps CIDR as per IP Addresses and CIDR blocks document"
 }
 
-variable "dq_internal_dashboard_instance_ip" {
-  description = "IP address of EC2 instance"
-  default     = "10.1.12.11"
+variable "dq_external_dashboard_subnet_cidr" {
+  default     = "10.1.14.0/24"
+  description = "DQ Apps CIDR as per IP Addresses and CIDR blocks document"
 }
 
-variable "dq_internal_dashboard_blue_instance_ip" {
+variable "dq_internal_dashboard_instance_ip" {
   description = "IP address of EC2 instance"
-  default     = "10.1.12.12"
+  type        = "list"
+  default     = ["10.1.12.111", "10.1.12.112", "10.1.12.113", "10.1.12.114"]
 }
 
 variable "dq_lambda_subnet_cidr" {
@@ -127,17 +143,67 @@ variable "key_name" {
   default = "test_instance"
 }
 
-#variable "s3_archive_bucket" {
-#  description = "S3 archive bucket name"
-#}
+variable "s3_archive_bucket" {
+  description = "S3 archive bucket name"
+}
 
+variable "s3_archive_bucket_key" {
+  description = "S3 archive bucket KMS key"
+}
 
-#variable "s3_archive_bucket_key" {
-#  description = "S3 archive bucket KMS key"
-#}
+variable "s3_archive_bucket_name" {
+  description = "Name of archive bucket"
+}
 
+variable "haproxy_private_ip" {
+  description = "IP of HaProxy 1"
+}
 
-#variable "s3_archive_bucket_name" {
-#  description = "Name of archive bucket"
-#}
+variable "database_name" {
+  default     = "internal_tableau"
+  description = "RDS Postgres database name"
+}
 
+variable "port" {
+  default     = "5432"
+  description = "RDS Postgres port access"
+}
+
+variable "environment" {
+  default     = "notprod"
+  description = "Switch between environments"
+}
+
+variable "s3_httpd_config_bucket" {
+  description = "HTTPD config bucket ID"
+}
+
+variable "s3_httpd_config_bucket_key" {
+  description = "HTTPD config bucket KMS Key ARN"
+}
+
+variable "dq_internal_staging_dashboard_instance_ip" {
+  description = "IP for staging instance"
+  default     = "10.1.12.115"
+}
+
+variable "dq_tableau_wip_dashboard_instance_ip" {
+  description = "IP for wip instance"
+  default     = "10.1.12.116"
+}
+
+variable "security_group_ids" {
+  description = "Lambda security group ID"
+}
+
+variable "lambda_subnet" {
+  description = "Lambda subnet ID"
+}
+
+variable "lambda_subnet_az2" {
+  description = "Lambda subnet ID"
+}
+
+variable "rds_enhanced_monitoring_role" {
+  description = "ARN of the RDS enhanced monitoring role"
+}

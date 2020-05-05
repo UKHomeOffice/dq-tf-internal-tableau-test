@@ -14,35 +14,30 @@ class TestE2E(unittest.TestCase):
               skip_credentials_validation = true
               skip_get_ec2_platforms = true
             }
-
             module "root_modules" {
               source = "./mymodule"
               providers = {aws = "aws"}
-
-              acp_prod_ingress_cidr                 = "10.5.0.0/16"
-              dq_ops_ingress_cidr                   = "10.2.0.0/16"
-              dq_internal_dashboard_subnet_cidr     = "10.1.12.0/24"
-              dq_internal_dashboard_subnet_cidr_az2 = "10.1.13.0/24"
-              peering_cidr_block                    = "1.1.1.0/24"
-              apps_vpc_id                           = "vpc-12345"
-              naming_suffix                         = "apps-preprod-dq"
-              #s3_archive_bucket                    = "bucket-name"
-              #s3_archive_bucket_key                = "1234567890"
-              #s3_archive_bucket_name               = "bucket-name"
+              acp_prod_ingress_cidr             = "10.5.0.0/16"
+              dq_ops_ingress_cidr               = "10.2.0.0/16"
+              dq_internal_dashboard_subnet_cidr = "10.1.12.0/24"
+              peering_cidr_block                = "1.1.1.0/24"
+              apps_vpc_id                       = "vpc-12345"
+              naming_suffix                     = "apps-preprod-dq"
+              s3_archive_bucket                 = "bucket-name"
+              s3_archive_bucket_key             = "1234567890"
+              s3_archive_bucket_name            = "bucket-name"
+              s3_httpd_config_bucket            = "s3-bucket-name"
+              s3_httpd_config_bucket_key        = "arn:aws:kms:us-west-2:111122223333:key/1234abcd-12ab-34cd-56ef-1234567890ab"
+              haproxy_private_ip                = "1.2.3.4"
+              environment                       = "prod"
+              security_group_ids                = "sg-1234567890"
+              lambda_subnet                     = "subnet-1234567890"
+              lambda_subnet_az2                 = "subnet-1234567890"
+              rds_enhanced_monitoring_role      = "arn:aws:iam::123456789:role/rds-enhanced-monitoring-role"
             }
-
         """
         self.result = Runner(self.snippet).result
 
-
-    @unittest.skip
-    def test_instance_ami(self):
-        self.assertEqual(self.result["root_modules"]["aws_instance.instance"]["ami"], "foo")
-
-    @unittest.skip  # @TODO
-    def test_instance_user_data(self):
-        greenplum_listen = hashlib.sha224("LISTEN_HTTP=0.0.0.0:443 CHECK_GP=foo:5432").sha1()
-        self.assertEqual(self.result["root_modules"]["aws_instance.instance"]["user_data"], greenplum_listen)
 
     def test_subnet_vpc(self):
         self.assertEqual(self.result["root_modules"]["aws_subnet.subnet"]["vpc_id"], "vpc-12345")
@@ -50,16 +45,6 @@ class TestE2E(unittest.TestCase):
     def test_subnet_cidr(self):
         self.assertEqual(self.result["root_modules"]["aws_subnet.subnet"]["cidr_block"], "10.1.12.0/24")
 
-    @unittest.skip
-    def test_security_group_ingress(self):
-        self.assertTrue(Runner.finder(self.result["root_modules"]["aws_security_group.sgrp"], ingress, {
-            'from_port': '80',
-            'to_port': '80',
-            'from_port': '3389',
-            'to_port': '3389',
-            'Protocol': 'tcp',
-            'Cidr_blocks': '0.0.0.0/0'
-        }))
     @unittest.skip
     def test_security_group_egress(self):
         self.assertTrue(Runner.finder(self.result["root_modules"]["aws_security_group.sgrp"], egress, {
@@ -84,14 +69,92 @@ class TestE2E(unittest.TestCase):
     def test_db_security_group_tags(self):
         self.assertEqual(self.result["root_modules"]["aws_security_group.internal_tableau_db"]["tags.Name"], "sg-db-internal-tableau-apps-preprod-dq")
 
+    def test_rds_change_switch(self):
+        self.assertEqual(self.result["root_modules"]["aws_db_instance.postgres"]["apply_immediately"], "false")
+
+    def test_rds_disk_size(self):
+        self.assertEqual(self.result["root_modules"]["aws_db_instance.postgres"]["allocated_storage"], "3300")
+
+    def test_rds_deletion_protection(self):
+        self.assertEqual(self.result["root_modules"]["aws_db_instance.postgres"]["deletion_protection"], "true")
+
     def test_rds_tags(self):
         self.assertEqual(self.result["root_modules"]["aws_db_instance.postgres"]["tags.Name"], "rds-postgres-internal-tableau-apps-preprod-dq")
 
-    #def test_ec2_tags(self):
-    #    self.assertEqual(self.result["root_modules"]["aws_instance.int_tableau"]["tags.Name"], "ec2-internal-tableau-apps-preprod-dq")
+    def test_ssm_rds_service_username(self):
+        self.assertEqual(self.result["root_modules"]["aws_ssm_parameter.rds_internal_tableau_service_username"]["name"], "rds_internal_tableau_service_username")
 
-    #def test_ec2_blue_tags(self):
-    #    self.assertEqual(self.result["root_modules"]["aws_instance.int_tableau_blue"]["tags.Name"], "ec2-internal-tableau-v2018-03-apps-preprod-dq")
+    def test_ssm_rds_service_username_string_type(self):
+        self.assertEqual(self.result["root_modules"]["aws_ssm_parameter.rds_internal_tableau_service_username"]["type"], "SecureString")
+
+    def test_ssm_rds_service_password(self):
+        self.assertEqual(self.result["root_modules"]["aws_ssm_parameter.rds_internal_tableau_service_password"]["name"], "rds_internal_tableau_service_password")
+
+    def test_ssm_rds_service_password_string_type(self):
+        self.assertEqual(self.result["root_modules"]["aws_ssm_parameter.rds_internal_tableau_service_password"]["type"], "SecureString")
+
+    def test_ssm_rds_username(self):
+        self.assertEqual(self.result["root_modules"]["aws_ssm_parameter.rds_internal_tableau_username"]["name"], "rds_internal_tableau_username")
+
+    def test_ssm_rds_username_string_type(self):
+        self.assertEqual(self.result["root_modules"]["aws_ssm_parameter.rds_internal_tableau_username"]["type"], "SecureString")
+
+    def test_ssm_rds_password(self):
+        self.assertEqual(self.result["root_modules"]["aws_ssm_parameter.rds_internal_tableau_password"]["name"], "rds_internal_tableau_password")
+
+    def test_ssm_rds_password_string_type(self):
+        self.assertEqual(self.result["root_modules"]["aws_ssm_parameter.rds_internal_tableau_password"]["type"], "SecureString")
+
+    def test_iam_role(self):
+        self.assertEqual(self.result["root_modules"]["aws_iam_role.postgres"]["name"], "rds-postgres-role-internal-tableau-apps-preprod-dq")
+
+    def test_staging_instance_tag(self):
+        self.assertEqual(self.result["root_modules"]["aws_instance.int_tableau_linux_staging"]["tags.Name"], "ec2-staging-internal-tableau-apps-preprod-dq")
+
+    def test_wip_instance_tag(self):
+        self.assertEqual(self.result["root_modules"]["aws_instance.tableau_linux_wip"]["tags.Name"], "ec2-wip-tableau-linux-apps-preprod-dq")
+
+    def test_rds_staging_tags(self):
+        self.assertEqual(self.result["root_modules"]["aws_db_instance.internal_reporting_snapshot_stg"]["tags.Name"], "stg-postgres-internal-tableau-apps-preprod-dq")
+
+    def test_rds_wip_tags(self):
+        self.assertEqual(self.result["root_modules"]["aws_db_instance.internal_reporting_snapshot_wip"]["tags.Name"], "wip-postgres-tableau-apps-preprod-dq")
+
+    def test_rds_staging_tags(self):
+        self.assertEqual(self.result["root_modules"]["aws_db_instance.internal_reporting_snapshot_stg"]["tags.Name"], "stg-postgres-internal-tableau-apps-preprod-dq")
+
+    def test_rds_postgres_backup_window(self):
+        self.assertEqual(self.result["root_modules"]["aws_db_instance.postgres"]["backup_window"], "00:00-01:00")
+
+    def test_rds_postgres_stg_backup_window(self):
+        self.assertEqual(self.result["root_modules"]["aws_db_instance.internal_reporting_snapshot_stg"]["backup_window"], "00:00-01:00")
+
+    def test_rds_postgres_wip_backup_window(self):
+        self.assertEqual(self.result["root_modules"]["aws_db_instance.internal_reporting_snapshot_wip"]["backup_window"], "00:00-01:00")
+
+    def test_rds_postgres_maintenance_window(self):
+        self.assertEqual(self.result["root_modules"]["aws_db_instance.postgres"]["maintenance_window"], "mon:01:00-mon:02:00")
+
+    def test_rds_postgres_stg_maintenance_window(self):
+        self.assertEqual(self.result["root_modules"]["aws_db_instance.internal_reporting_snapshot_stg"]["maintenance_window"], "tue:01:00-tue:02:00")
+
+    def test_rds_postgres_wip_maintenance_window(self):
+        self.assertEqual(self.result["root_modules"]["aws_db_instance.internal_reporting_snapshot_wip"]["maintenance_window"], "tue:01:00-tue:02:00")
+
+    def test_rds_postgres_stg_engine_version(self):
+        self.assertEqual(self.result["root_modules"]["aws_db_instance.internal_reporting_snapshot_stg"]["engine_version"], "10.10")
+
+    def test_rds_postgres_wip_engine_version(self):
+        self.assertEqual(self.result["root_modules"]["aws_db_instance.internal_reporting_snapshot_wip"]["engine_version"], "10.6")
+
+    def test_rds_postgres_stg_apply_immediately(self):
+        self.assertEqual(self.result["root_modules"]["aws_db_instance.internal_reporting_snapshot_stg"]["apply_immediately"], "false")
+
+    def test_rds_postgres_wip_apply_immediately(self):
+        self.assertEqual(self.result["root_modules"]["aws_db_instance.internal_reporting_snapshot_wip"]["apply_immediately"], "false")
+
+    def test_rds_postgres_postgres_engine_version(self):
+        self.assertEqual(self.result["root_modules"]["aws_db_instance.postgres"]["engine_version"], "10.10")
 
 if __name__ == '__main__':
     unittest.main()
