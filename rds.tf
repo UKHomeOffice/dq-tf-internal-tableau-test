@@ -98,7 +98,7 @@ EOF
 
 resource "aws_db_instance" "postgres" {
   identifier                      = "postgres-${local.naming_suffix}"
-  snapshot_identifier             = "rds:int-tableau-postgres-internal-tableau-apps-test-dq-2020-04-25-00-05"
+  snapshot_identifier             = "rds:int-tableau-postgres-internal-tableau-apps-test-dq-final-snapshot"
   allocated_storage               = "350"
   storage_type                    = "gp2"
   engine                          = "postgres"
