@@ -125,9 +125,9 @@ resource "aws_db_instance" "postgres" {
   db_subnet_group_name   = "${aws_db_subnet_group.rds.id}"
   vpc_security_group_ids = ["${aws_security_group.internal_tableau_db.id}"]
 
-  lifecycle {
-    prevent_destroy = true
-  }
+  # lifecycle {
+  #   prevent_destroy = true
+  # }
 
   tags {
     Name = "rds-postgres-${local.naming_suffix}"
