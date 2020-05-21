@@ -1,6 +1,6 @@
 # pylint: disable=missing-docstring, line-too-long, protected-access, E1101, C0202, E0602, W0109
 import unittest
-import hashlib
+# import hashlib
 from runner import Runner
 
 
@@ -36,14 +36,14 @@ class TestE2E(unittest.TestCase):
               rds_enhanced_monitoring_role      = "arn:aws:iam::123456789:role/rds-enhanced-monitoring-role"
             }
         """
-        self.result = Runner(self.snippet).result
-
+        self.runner = Runner(self.snippet)
+        self.result = self.runner.result
 
     def test_subnet_vpc(self):
-        self.assertEqual(self.result["root_modules"]["aws_subnet.subnet"]["vpc_id"], "vpc-12345")
+        self.assertEqual(self.runner.get_value("module.root_modules.aws_subnet.subnet", "vpc_id"), "vpc-12345")
 
     def test_subnet_cidr(self):
-        self.assertEqual(self.result["root_modules"]["aws_subnet.subnet"]["cidr_block"], "10.1.12.0/24")
+        self.assertEqual(self.runner.get_value("module.root_modules.aws_subnet.subnet", "cidr_block"), "10.1.12.0/24")
 
     @unittest.skip
     def test_security_group_egress(self):
@@ -55,58 +55,58 @@ class TestE2E(unittest.TestCase):
         }))
 
     def test_subnet_tags(self):
-        self.assertEqual(self.result["root_modules"]["aws_subnet.subnet"]["tags.Name"], "subnet-internal-tableau-apps-preprod-dq")
+        self.assertEqual(self.runner.get_value("module.root_modules.aws_subnet.subnet", "tags"), {'Name': "subnet-internal-tableau-apps-preprod-dq"})
 
     def test_security_group_tags(self):
-        self.assertEqual(self.result["root_modules"]["aws_security_group.sgrp"]["tags.Name"], "sg-internal-tableau-apps-preprod-dq")
+        self.assertEqual(self.runner.get_value("module.root_modules.aws_security_group.sgrp", "tags"), {'Name': "sg-internal-tableau-apps-preprod-dq"})
 
     def test_db_subnet_group_tags(self):
-        self.assertEqual(self.result["root_modules"]["aws_db_subnet_group.rds"]["tags.Name"], "rds-subnet-group-internal-tableau-apps-preprod-dq")
+        self.assertEqual(self.runner.get_value("module.root_modules.aws_db_subnet_group.rds", "tags"), {'Name': "rds-subnet-group-internal-tableau-apps-preprod-dq"})
 
     def test_aws_subnet_tags(self):
-        self.assertEqual(self.result["root_modules"]["aws_subnet.internal_tableau_az2"]["tags.Name"], "az2-subnet-internal-tableau-apps-preprod-dq")
+        self.assertEqual(self.runner.get_value("module.root_modules.aws_subnet.internal_tableau_az2", "tags"), {'Name': "az2-subnet-internal-tableau-apps-preprod-dq"})
 
     def test_db_security_group_tags(self):
-        self.assertEqual(self.result["root_modules"]["aws_security_group.internal_tableau_db"]["tags.Name"], "sg-db-internal-tableau-apps-preprod-dq")
+        self.assertEqual(self.runner.get_value("module.root_modules.aws_security_group.internal_tableau_db", "tags"), {'Name': "sg-db-internal-tableau-apps-preprod-dq"})
 
     def test_rds_change_switch(self):
-        self.assertEqual(self.result["root_modules"]["aws_db_instance.postgres"]["apply_immediately"], "true")
+        self.assertEqual(self.runner.get_value("module.root_modules.aws_db_instance.postgres", "apply_immediately"), True)
 
     def test_rds_disk_size(self):
-        self.assertEqual(self.result["root_modules"]["aws_db_instance.postgres"]["allocated_storage"], "350")
+        self.assertEqual(self.runner.get_value("module.root_modules.aws_db_instance.postgres", "allocated_storage"), 350)
 
     def test_rds_deletion_protection(self):
-        self.assertEqual(self.result["root_modules"]["aws_db_instance.postgres"]["deletion_protection"], "true")
+        self.assertEqual(self.runner.get_value("module.root_modules.aws_db_instance.postgres", "deletion_protection"), True)
 
     def test_rds_tags(self):
-        self.assertEqual(self.result["root_modules"]["aws_db_instance.postgres"]["tags.Name"], "rds-postgres-internal-tableau-apps-preprod-dq")
+        self.assertEqual(self.runner.get_value("module.root_modules.aws_db_instance.postgres", "tags"), {'Name': "rds-postgres-internal-tableau-apps-preprod-dq"})
 
     def test_ssm_rds_service_username(self):
-        self.assertEqual(self.result["root_modules"]["aws_ssm_parameter.rds_internal_tableau_service_username"]["name"], "rds_internal_tableau_service_username")
+        self.assertEqual(self.runner.get_value("module.root_modules.aws_ssm_parameter.rds_internal_tableau_service_username", "name"), "rds_internal_tableau_service_username")
 
     def test_ssm_rds_service_username_string_type(self):
-        self.assertEqual(self.result["root_modules"]["aws_ssm_parameter.rds_internal_tableau_service_username"]["type"], "SecureString")
+        self.assertEqual(self.runner.get_value("module.root_modules.aws_ssm_parameter.rds_internal_tableau_service_username", "type"), "SecureString")
 
     def test_ssm_rds_service_password(self):
-        self.assertEqual(self.result["root_modules"]["aws_ssm_parameter.rds_internal_tableau_service_password"]["name"], "rds_internal_tableau_service_password")
+        self.assertEqual(self.runner.get_value("module.root_modules.aws_ssm_parameter.rds_internal_tableau_service_password", "name"), "rds_internal_tableau_service_password")
 
     def test_ssm_rds_service_password_string_type(self):
-        self.assertEqual(self.result["root_modules"]["aws_ssm_parameter.rds_internal_tableau_service_password"]["type"], "SecureString")
+        self.assertEqual(self.runner.get_value("module.root_modules.aws_ssm_parameter.rds_internal_tableau_service_password", "type"), "SecureString")
 
     def test_ssm_rds_username(self):
-        self.assertEqual(self.result["root_modules"]["aws_ssm_parameter.rds_internal_tableau_username"]["name"], "rds_internal_tableau_username")
+        self.assertEqual(self.runner.get_value("module.root_modules.aws_ssm_parameter.rds_internal_tableau_username", "name"), "rds_internal_tableau_username")
 
     def test_ssm_rds_username_string_type(self):
-        self.assertEqual(self.result["root_modules"]["aws_ssm_parameter.rds_internal_tableau_username"]["type"], "SecureString")
+        self.assertEqual(self.runner.get_value("module.root_modules.aws_ssm_parameter.rds_internal_tableau_username", "type"), "SecureString")
 
     def test_ssm_rds_password(self):
-        self.assertEqual(self.result["root_modules"]["aws_ssm_parameter.rds_internal_tableau_password"]["name"], "rds_internal_tableau_password")
+        self.assertEqual(self.runner.get_value("module.root_modules.aws_ssm_parameter.rds_internal_tableau_password", "name"), "rds_internal_tableau_password")
 
     def test_ssm_rds_password_string_type(self):
-        self.assertEqual(self.result["root_modules"]["aws_ssm_parameter.rds_internal_tableau_password"]["type"], "SecureString")
+        self.assertEqual(self.runner.get_value("module.root_modules.aws_ssm_parameter.rds_internal_tableau_password", "type"), "SecureString")
 
     def test_iam_role(self):
-        self.assertEqual(self.result["root_modules"]["aws_iam_role.postgres"]["name"], "rds-postgres-role-internal-tableau-apps-preprod-dq")
+        self.assertEqual(self.runner.get_value("module.root_modules.aws_iam_role.postgres", "name"), "rds-postgres-role-internal-tableau-apps-preprod-dq")
     #
     # def test_staging_instance_tag(self):
     #     self.assertEqual(self.result["root_modules"]["aws_instance.int_tableau_linux_staging"]["tags.Name"], "ec2-staging-internal-tableau-apps-preprod-dq")
@@ -154,7 +154,7 @@ class TestE2E(unittest.TestCase):
     #     self.assertEqual(self.result["root_modules"]["aws_db_instance.internal_reporting_snapshot_wip"]["apply_immediately"], "false")
 
     def test_rds_postgres_postgres_engine_version(self):
-        self.assertEqual(self.result["root_modules"]["aws_db_instance.postgres"]["engine_version"], "10.10")
+        self.assertEqual(self.runner.get_value("module.root_modules.aws_db_instance.postgres", "engine_version"), "10.10")
 
 if __name__ == '__main__':
     unittest.main()

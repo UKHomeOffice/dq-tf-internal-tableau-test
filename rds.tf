@@ -1,38 +1,38 @@
 locals {
-  internal_reporting_dev_count     = "${var.environment == "prod" ? "0" : "1"}"
-  internal_reporting_qa_count      = "${var.environment == "prod" ? "0" : "1"}"
-  internal_reporting_stg_count     = "${var.environment == "prod" ? "1" : "1"}"
-  internal_reporting_wip_count     = "${var.environment == "prod" ? "1" : "1"}"
-  internal_reporting_upgrade_count = "${var.environment == "prod" ? "0" : "1"}"
+  internal_reporting_dev_count     = var.environment == "prod" ? "0" : "1"
+  internal_reporting_qa_count      = var.environment == "prod" ? "0" : "1"
+  internal_reporting_stg_count     = var.environment == "prod" ? "1" : "1"
+  internal_reporting_wip_count     = var.environment == "prod" ? "1" : "1"
+  internal_reporting_upgrade_count = var.environment == "prod" ? "0" : "1"
 }
 
 resource "aws_db_subnet_group" "rds" {
   name = "internal_tableau_rds_group"
 
   subnet_ids = [
-    "${aws_subnet.subnet.id}",
-    "${aws_subnet.internal_tableau_az2.id}",
+    aws_subnet.subnet.id,
+    aws_subnet.internal_tableau_az2.id,
   ]
 
-  tags {
+  tags = {
     Name = "rds-subnet-group-${local.naming_suffix}"
   }
 }
 
 resource "aws_subnet" "internal_tableau_az2" {
-  vpc_id                  = "${var.apps_vpc_id}"
-  cidr_block              = "${var.dq_internal_dashboard_subnet_cidr_az2}"
+  vpc_id                  = var.apps_vpc_id
+  cidr_block              = var.dq_internal_dashboard_subnet_cidr_az2
   map_public_ip_on_launch = false
-  availability_zone       = "${var.az2}"
+  availability_zone       = var.az2
 
-  tags {
+  tags = {
     Name = "az2-subnet-${local.naming_suffix}"
   }
 }
 
 resource "aws_route_table_association" "internal_tableau_rt_rds" {
-  subnet_id      = "${aws_subnet.internal_tableau_az2.id}"
-  route_table_id = "${var.route_table_id}"
+  subnet_id      = aws_subnet.internal_tableau_az2.id
+  route_table_id = var.route_table_id
 }
 
 resource "random_string" "password" {
@@ -47,21 +47,21 @@ resource "random_string" "username" {
 }
 
 resource "aws_security_group" "internal_tableau_db" {
-  vpc_id = "${var.apps_vpc_id}"
+  vpc_id = var.apps_vpc_id
 
   ingress {
-    from_port = "${var.rds_from_port}"
-    to_port   = "${var.rds_to_port}"
-    protocol  = "${var.rds_protocol}"
+    from_port = var.rds_from_port
+    to_port   = var.rds_to_port
+    protocol  = var.rds_protocol
 
     cidr_blocks = [
-      "${var.dq_ops_ingress_cidr}",
-      "${var.peering_cidr_block}",
-      "${var.dq_internal_dashboard_subnet_cidr}",
-      "${var.dq_internal_dashboard_subnet_cidr_az2}",
-      "${var.dq_lambda_subnet_cidr}",
-      "${var.dq_lambda_subnet_cidr_az2}",
-      "${var.dq_external_dashboard_subnet_cidr}",
+      var.dq_ops_ingress_cidr,
+      var.peering_cidr_block,
+      var.dq_internal_dashboard_subnet_cidr,
+      var.dq_internal_dashboard_subnet_cidr_az2,
+      var.dq_lambda_subnet_cidr,
+      var.dq_lambda_subnet_cidr_az2,
+      var.dq_external_dashboard_subnet_cidr,
     ]
   }
 
@@ -72,7 +72,7 @@ resource "aws_security_group" "internal_tableau_db" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
-  tags {
+  tags = {
     Name = "sg-db-${local.naming_suffix}"
   }
 }
@@ -94,6 +94,7 @@ resource "aws_iam_role" "postgres" {
   ]
 }
 EOF
+
 }
 
 resource "aws_db_instance" "postgres" {
@@ -105,10 +106,10 @@ resource "aws_db_instance" "postgres" {
   engine_version                  = "10.10"
   instance_class                  = "db.m5.2xlarge"
   enabled_cloudwatch_logs_exports = ["postgresql", "upgrade"]
-  username                        = "${random_string.username.result}"
-  password                        = "${random_string.password.result}"
-  name                            = "${var.database_name}"
-  port                            = "${var.port}"
+  username                        = random_string.username.result
+  password                        = random_string.password.result
+  name                            = var.database_name
+  port                            = var.port
   backup_window                   = "07:00-08:00"
   maintenance_window              = "mon:08:00-mon:09:00"
   backup_retention_period         = 14
@@ -120,31 +121,31 @@ resource "aws_db_instance" "postgres" {
   ca_cert_identifier              = "rds-ca-2019"
 
   monitoring_interval = "60"
-  monitoring_role_arn = "${var.rds_enhanced_monitoring_role}"
+  monitoring_role_arn = var.rds_enhanced_monitoring_role
 
-  db_subnet_group_name   = "${aws_db_subnet_group.rds.id}"
-  vpc_security_group_ids = ["${aws_security_group.internal_tableau_db.id}"]
+  db_subnet_group_name   = aws_db_subnet_group.rds.id
+  vpc_security_group_ids = [aws_security_group.internal_tableau_db.id]
 
   lifecycle {
     prevent_destroy = true
     ignore_changes = [
-      "username",
-      "password",
+      username,
+      password,
     ]
   }
 
-  tags {
+  tags = {
     Name = "rds-postgres-${local.naming_suffix}"
   }
 }
 
 module "rds_alarms" {
-  source = "github.com/UKHomeOffice/dq-tf-cloudwatch-rds"
+  source = "git::https://github.com/UKHomeOffice/dq-tf-cloudwatch-rds.git?ref=TF12-upgrade"
 
-  naming_suffix                = "${local.naming_suffix}"
-  environment                  = "${var.naming_suffix}"
+  naming_suffix                = local.naming_suffix
+  environment                  = var.naming_suffix
   pipeline_name                = "internal-tableau"
-  db_instance_id               = "${aws_db_instance.postgres.id}"
+  db_instance_id               = aws_db_instance.postgres.id
   free_storage_space_threshold = 250000000000 # 250GB free space
   read_latency_threshold       = 0.05         # 50 milliseconds
   write_latency_threshold      = 1            # 1 second
@@ -312,13 +313,13 @@ module "rds_alarms" {
 resource "aws_ssm_parameter" "rds_internal_tableau_username" {
   name  = "rds_internal_tableau_username"
   type  = "SecureString"
-  value = "${random_string.username.result}"
+  value = random_string.username.result
 }
 
 resource "aws_ssm_parameter" "rds_internal_tableau_password" {
   name  = "rds_internal_tableau_password"
   type  = "SecureString"
-  value = "${random_string.password.result}"
+  value = random_string.password.result
 }
 
 resource "random_string" "service_username" {
@@ -335,19 +336,19 @@ resource "random_string" "service_password" {
 resource "aws_ssm_parameter" "rds_internal_tableau_service_username" {
   name  = "rds_internal_tableau_service_username"
   type  = "SecureString"
-  value = "${random_string.service_username.result}"
+  value = random_string.service_username.result
 }
 
 resource "aws_ssm_parameter" "rds_internal_tableau_service_password" {
   name  = "rds_internal_tableau_service_password"
   type  = "SecureString"
-  value = "${random_string.service_password.result}"
+  value = random_string.service_password.result
 }
 
 resource "aws_ssm_parameter" "rds_internal_tableau_postgres_endpoint" {
   name  = "rds_internal_tableau_postgres_endpoint"
   type  = "String"
-  value = "${aws_db_instance.postgres.endpoint}"
+  value = aws_db_instance.postgres.endpoint
 }
 
 # resource "aws_ssm_parameter" "rds_internal_tableau_dev_endpoint" {
