@@ -93,11 +93,11 @@ class TestE2E(unittest.TestCase):
     def test_ssm_rds_service_password_string_type(self):
         self.assertEqual(self.runner.get_value("module.root_modules.aws_ssm_parameter.rds_internal_tableau_service_password", "type"), "SecureString")
 
-    def test_ssm_rds_username(self):
-        self.assertEqual(self.runner.get_value("module.root_modules.aws_ssm_parameter.rds_internal_tableau_username", "name"), "rds_internal_tableau_username")
-
-    def test_ssm_rds_username_string_type(self):
-        self.assertEqual(self.runner.get_value("module.root_modules.aws_ssm_parameter.rds_internal_tableau_username", "type"), "SecureString")
+    # def test_ssm_rds_username(self):
+    #     self.assertEqual(self.runner.get_value("module.root_modules.aws_ssm_parameter.rds_internal_tableau_username", "name"), "rds_internal_tableau_username")
+    #
+    # def test_ssm_rds_username_string_type(self):
+    #     self.assertEqual(self.runner.get_value("module.root_modules.aws_ssm_parameter.rds_internal_tableau_username", "type"), "SecureString")
 
     def test_ssm_rds_password(self):
         self.assertEqual(self.runner.get_value("module.root_modules.aws_ssm_parameter.rds_internal_tableau_password", "name"), "rds_internal_tableau_password")
