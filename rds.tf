@@ -310,11 +310,11 @@ module "rds_alarms" {
 #   }
 # }
 
-# resource "aws_ssm_parameter" "rds_internal_tableau_username" {
-#   name  = "rds_internal_tableau_username"
-#   type  = "SecureString"
-#   value = random_string.username.result
-# }
+resource "aws_ssm_parameter" "rds_internal_tableau_username" {
+  name  = "rds_internal_tableau_username"
+  type  = "SecureString"
+  value = random_string.username.result
+}
 
 resource "aws_ssm_parameter" "rds_internal_tableau_password" {
   name  = "rds_internal_tableau_password"
