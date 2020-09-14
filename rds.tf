@@ -115,7 +115,7 @@ resource "aws_db_instance" "postgres" {
   backup_retention_period         = 14
   deletion_protection             = true
   storage_encrypted               = true
-  multi_az                        = true
+  multi_az                        = false
   skip_final_snapshot             = true
   apply_immediately               = "true"
   ca_cert_identifier              = "rds-ca-2019"
