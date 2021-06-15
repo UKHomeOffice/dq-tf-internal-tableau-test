@@ -5,34 +5,36 @@ locals {
   naming_suffix_wip_linux = "tableau-linux-${var.naming_suffix}"
 }
 
-#
-# resource "aws_instance" "int_tableau_linux" {
-#   count                       = "${var.environment == "prod" ? "2" : "1"}" # Allow different instance count in prod and notprod
-#   key_name                    = "${var.key_name}"
-#   ami                         = "${data.aws_ami.int_tableau_linux.id}"
-#   instance_type               = "r5d.4xlarge"
-#   iam_instance_profile        = "${aws_iam_instance_profile.int_tableau.id}"
-#   vpc_security_group_ids      = ["${aws_security_group.sgrp.id}"]
-#   associate_public_ip_address = false
-#   subnet_id                   = "${aws_subnet.subnet.id}"
-#   private_ip                  = "${element(var.dq_internal_dashboard_instance_ip, count.index)}"
-#   monitoring                  = true
-#
-#   user_data = <<EOF
-# #!/bin/bash
-#
-# set -e
-#
-# #log output from this user_data script
-# exec > >(tee /var/log/user-data.log|logger -t user-data ) 2>&1
-#
-# echo "#Mount filesystem - /var/opt/tableau/"
-# mkfs.xfs /dev/nvme2n1
-# mkdir -p /var/opt/tableau/
-# mount /dev/nvme2n1 /var/opt/tableau
-# echo '/dev/nvme2n1 /var/opt/tableau xfs defaults 0 0' >> /etc/fstab
-#
-#
+
+resource "aws_instance" "int_tableau_linux" {
+  count                       = "${var.environment == "prod" ? "2" : "1"}" # Allow different instance count in prod and notprod
+  key_name                    = "${var.key_name}"
+  ami                         = "${data.aws_ami.int_tableau_linux.id}"
+  instance_type               = "r5d.4xlarge"
+  iam_instance_profile        = "${aws_iam_instance_profile.int_tableau.id}"
+  vpc_security_group_ids      = ["${aws_security_group.sgrp.id}"]
+  associate_public_ip_address = false
+  subnet_id                   = "${aws_subnet.subnet.id}"
+  private_ip                  = "${element(var.dq_internal_dashboard_instance_ip, count.index)}"
+  monitoring                  = true
+
+  user_data = <<EOF
+#!/bin/bash
+
+set -e
+
+#log output from this user_data script
+exec > >(tee /var/log/user-data.log|logger -t user-data ) 2>&1
+
+echo "#Mount filesystem - /var/opt/tableau/"
+mkfs.xfs /dev/nvme2n1
+mkdir -p /var/opt/tableau/
+mount /dev/nvme2n1 /var/opt/tableau
+echo '/dev/nvme2n1 /var/opt/tableau xfs defaults 0 0' >> /etc/fstab
+
+# start the cloud watch agent
+/opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a fetch-config -s -m ec2 -c file:/opt/aws/amazon-cloudwatch-agent/bin/config.json
+
 # echo "#Pull values from Parameter Store and save to profile"
 # touch /home/tableau_srv/env_vars.sh
 # echo "
@@ -155,48 +157,48 @@ locals {
 #
 # echo "#TSMCMD - initial user"
 # tabcmd initialuser --server 'localhost:80' --username "$TAB_ADMIN_USER" --password "$TAB_ADMIN_PASSWORD"
-#
-# # Always restore from green
-# export BACKUP_LOCATION="$DATA_ARCHIVE_TAB_BACKUP_URL/green/"
-#
-# echo "#Get most recent Tableau backup from S3"
-# export LATEST_BACKUP_NAME=`aws s3 ls $BACKUP_LOCATION | tail -1 | awk '{print $4}'`
-# aws s3 cp $BACKUP_LOCATION$LATEST_BACKUP_NAME /var/opt/tableau/tableau_server/data/tabsvc/files/backups/$LATEST_BACKUP_NAME
-#
-# echo "#Restore latest backup to Tableau Server"
-# tsm stop --username "$TAB_SRV_USER" --password "$TAB_SRV_PASSWORD" && tsm maintenance restore --file $LATEST_BACKUP_NAME --username "$TAB_SRV_USER" --password "$TAB_SRV_PASSWORD" && tsm start --username "$TAB_SRV_USER" --password "$TAB_SRV_PASSWORD"
-#
-# echo "#Publishing required DataSources and WorkBooks"
-# su -c "/home/tableau_srv/scripts/tableau_pub.py /home/tableau_srv/$TAB_INT_REPO_NAME DQDashboards" - tableau_srv
-#
-# echo "#Mount filesystem - /var/log/"
-# mkfs.xfs /dev/nvme1n1
-# mkdir -p /mnt/var/log/
-# mount /dev/nvme1n1 /mnt/var/log
-# rsync -a /var/log/ /mnt/var/log
-# semanage fcontext -a -t var_t "/mnt/var" && semanage fcontext -a -e /var/log /mnt/var/log && restorecon -R -v /mnt/var
-# echo '/dev/nvme1n1 /var/log xfs defaults 0 0' >> /etc/fstab
-# umount /mnt/var/log/
-#
-# reboot
-#
-# EOF
-#
-#   tags = {
-#     Name = "ec2-${local.naming_suffix_linux}"
-#   }
-#
-#   lifecycle {
-#     prevent_destroy = true
-#
-#     ignore_changes = [
-#       "user_data",
-#       "ami",
-#       "instance_type",
-#     ]
-#   }
-# }
-#
+
+# Always restore from green
+export BACKUP_LOCATION="$DATA_ARCHIVE_TAB_BACKUP_URL/green/"
+
+echo "#Get most recent Tableau backup from S3"
+export LATEST_BACKUP_NAME=`aws s3 ls $BACKUP_LOCATION | tail -1 | awk '{print $4}'`
+aws s3 cp $BACKUP_LOCATION$LATEST_BACKUP_NAME /var/opt/tableau/tableau_server/data/tabsvc/files/backups/$LATEST_BACKUP_NAME
+
+echo "#Restore latest backup to Tableau Server"
+tsm stop --username "$TAB_SRV_USER" --password "$TAB_SRV_PASSWORD" && tsm maintenance restore --file $LATEST_BACKUP_NAME --username "$TAB_SRV_USER" --password "$TAB_SRV_PASSWORD" && tsm start --username "$TAB_SRV_USER" --password "$TAB_SRV_PASSWORD"
+
+echo "#Publishing required DataSources and WorkBooks"
+su -c "/home/tableau_srv/scripts/tableau_pub.py /home/tableau_srv/$TAB_INT_REPO_NAME DQDashboards" - tableau_srv
+
+echo "#Mount filesystem - /var/log/"
+mkfs.xfs /dev/nvme1n1
+mkdir -p /mnt/var/log/
+mount /dev/nvme1n1 /mnt/var/log
+rsync -a /var/log/ /mnt/var/log
+semanage fcontext -a -t var_t "/mnt/var" && semanage fcontext -a -e /var/log /mnt/var/log && restorecon -R -v /mnt/var
+echo '/dev/nvme1n1 /var/log xfs defaults 0 0' >> /etc/fstab
+umount /mnt/var/log/
+
+reboot
+
+EOF
+
+  tags = {
+    Name = "ec2-${local.naming_suffix_linux}"
+  }
+
+  lifecycle {
+    prevent_destroy = true
+
+    ignore_changes = [
+      "user_data",
+      "ami",
+      "instance_type",
+    ]
+  }
+}
+
 # resource "aws_instance" "int_tableau_linux_staging" {
 #   count                       = "${var.environment == "prod" ? "1" : "0"}" # Allow different instance count in prod and notprod
 #   key_name                    = "${var.key_name}"
@@ -667,4 +669,3 @@ resource "aws_security_group" "sgrp" {
     Name = "sg-${local.naming_suffix}"
   }
 }
-

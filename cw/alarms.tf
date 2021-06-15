@@ -10,7 +10,7 @@ locals {
 }
 
 resource "aws_cloudwatch_metric_alarm" "cpu_utilization_too_high" {
-  count               = var.environment == "prod" ? "2" : "1"
+  count               = "1"
   alarm_name          = "${var.pipeline_name}-CPU-Utilization-too-high"
   comparison_operator = "GreaterThanThreshold"
   evaluation_periods  = "1"

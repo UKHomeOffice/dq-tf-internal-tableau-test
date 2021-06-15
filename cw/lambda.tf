@@ -5,6 +5,7 @@ data "archive_file" "lambda_slack_zip" {
 }
 
 resource "aws_lambda_permission" "with_sns" {
+  count         = "1"
   statement_id  = "AllowExecutionFromSNS"
   action        = "lambda:InvokeFunction"
   function_name = aws_lambda_function.lambda_slack.function_name
@@ -13,6 +14,7 @@ resource "aws_lambda_permission" "with_sns" {
 }
 
 resource "aws_lambda_function" "lambda_slack" {
+  count            = "1"
   filename         = "${path.module}/lambda/slack/package/lambda.zip"
   function_name    = "${var.pipeline_name}-lambda-slack-${var.environment}"
   role             = aws_iam_role.lambda_role_slack.arn
@@ -38,8 +40,9 @@ resource "aws_lambda_function" "lambda_slack" {
 }
 
 resource "aws_iam_role_policy" "lambda_policy_slack" {
-  name = "${var.pipeline_name}-lambda-policy-slack-${var.environment}"
-  role = aws_iam_role.lambda_role_slack.id
+  count = "1"
+  name  = "${var.pipeline_name}-lambda-policy-slack-${var.environment}"
+  role  = aws_iam_role.lambda_role_slack.id
 
   policy = <<EOF
 {
@@ -63,6 +66,7 @@ EOF
 }
 
 resource "aws_iam_role" "lambda_role_slack" {
+  count              = "1"
   assume_role_policy = <<EOF
 {
   "Version": "2012-10-17",
@@ -86,6 +90,7 @@ EOF
 }
 
 resource "aws_cloudwatch_log_group" "lambda_log_group_slack" {
+  count             = "1"
   name              = "/aws/lambda/${aws_lambda_function.lambda_slack.function_name}"
   retention_in_days = 14
 
@@ -95,6 +100,7 @@ resource "aws_cloudwatch_log_group" "lambda_log_group_slack" {
 }
 
 resource "aws_iam_policy" "lambda_logging_policy_slack" {
+  count       = "1"
   name        = "${var.pipeline_name}-lambda-logging-policy-slack-${var.environment}"
   path        = "/"
   description = "IAM policy for logging from a lambda"
@@ -121,6 +127,7 @@ EOF
 }
 
 resource "aws_iam_role_policy_attachment" "lambda_logging_policy_attachment_slack" {
+  count      = "1"
   role       = aws_iam_role.lambda_role_slack.name
   policy_arn = aws_iam_policy.lambda_logging_policy_slack.arn
 }

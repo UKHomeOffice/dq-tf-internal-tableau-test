@@ -1,5 +1,6 @@
 resource "aws_sns_topic" "ec2" {
-  name = var.pipeline_name
+  count = "1"
+  name  = var.pipeline_name
 }
 
 
