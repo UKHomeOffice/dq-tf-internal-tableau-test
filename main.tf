@@ -33,14 +33,6 @@ module "cloudwatch_alarms_ec2_0" {
   pipeline_name   = "internal_tableau"
 }
 
-module "cloudwatch_alarms_ec2_1" {
-  source          = "github.com/UKHomeOffice/dq-tf-cloudwatch-ec2"
-  environment     = "test"
-  naming_suffix   = local.naming_suffix
-  ec2_instance_id = aws_instance.int_tableau_linux[1].id
-  pipeline_name   = "internal_tableau"
-}
-
 resource "aws_instance" "int_tableau_linux" {
   count                       = 2 # Allow different instance count in prod and notprod
   key_name                    = var.key_name
