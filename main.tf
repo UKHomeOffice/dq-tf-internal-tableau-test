@@ -42,7 +42,7 @@ module "cloudwatch_alarms_ec2_1" {
 }
 
 resource "aws_instance" "int_tableau_linux" {
-  count                       = 1 # Allow different instance count in prod and notprod
+  count                       = 2 # Allow different instance count in prod and notprod
   key_name                    = var.key_name
   ami                         = data.aws_ami.int_tableau_linux.id
   instance_type               = "t3.micro"
