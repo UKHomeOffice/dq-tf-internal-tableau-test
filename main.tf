@@ -1,4 +1,4 @@
-ocals {
+locals {
   naming_suffix       = "internal-tableau-${var.naming_suffix}"
   naming_suffix_linux = "internal-tableau-linux-${var.naming_suffix}"
 }
