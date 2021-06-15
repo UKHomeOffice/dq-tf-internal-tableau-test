@@ -8,10 +8,10 @@ variable "pipeline_name" {
 #   default     = "true"
 # }
 #
-# variable "path_module" {
-#   default = "unset"
-# }
-#
+variable "path_module" {
+  default = "unset"
+}
+
 variable "cpu_utilization_threshold" {
   description = "The maximum percentage of CPU utilization."
   type        = string
