@@ -25,8 +25,24 @@ locals {
 #   ec2_instance_id = aws_instance.int_tableau_linux[0].id
 # }
 
+module "cloudwatch_alarms_ec2_0" {
+  source          = "github.com/UKHomeOffice/dq-tf-cloudwatch-ec2"
+  environment     = "test"
+  naming_suffix   = local.naming_suffix
+  ec2_instance_id = aws_instance.int_tableau_linux[0].id
+  pipeline_name   = "internal_tableau"
+}
+
+module "cloudwatch_alarms_ec2_1" {
+  source          = "github.com/UKHomeOffice/dq-tf-cloudwatch-ec2"
+  environment     = "test"
+  naming_suffix   = local.naming_suffix
+  ec2_instance_id = aws_instance.int_tableau_linux[1].id
+  pipeline_name   = "internal_tableau"
+}
+
 resource "aws_instance" "int_tableau_linux" {
-  count                       = 1 # Allow different instance count in prod and notprod
+  count                       = 2 # Allow different instance count in prod and notprod
   key_name                    = var.key_name
   ami                         = data.aws_ami.int_tableau_linux.id
   instance_type               = "t3.micro"
