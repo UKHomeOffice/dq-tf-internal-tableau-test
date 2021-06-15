@@ -1,8 +1,8 @@
-# variable "pipeline_name" {
-#   description = "CloudWatchAlarm"
-#   default     = "internal_tableau"
-# }
-#
+variable "pipeline_name" {
+  description = "CloudWatchAlarm"
+  default     = "internal_tableau"
+}
+
 # variable "swap_alarm" {
 #   description = "Switch to turn off Swap monitoring (required for MSSQL). Accepted values are 'false' to turn off and 'true' to excplicitly turn on"
 #   default     = "true"
@@ -12,12 +12,12 @@
 #   default = "unset"
 # }
 #
-# variable "cpu_utilization_threshold" {
-#   description = "The maximum percentage of CPU utilization."
-#   type        = string
-#   default     = 80
-# }
-#
+variable "cpu_utilization_threshold" {
+  description = "The maximum percentage of CPU utilization."
+  type        = string
+  default     = 80
+}
+
 # variable "available_memory_threshold" {
 #   description = "The percentage of available memory."
 #   type        = string
