@@ -1,4 +1,5 @@
 resource "aws_iam_role" "int_tableau" {
+  name               = "int-tableau"
   assume_role_policy = <<EOF
 {
   "Version": "2012-10-17",
