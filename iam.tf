@@ -20,11 +20,10 @@ EOF
 
 }
 
-resource "aws_iam_role_policy_attachment" "test_role" {
+resource "aws_iam_role_policy_attachment" "dq_tf_infra_write_to_cw" {
   role       = aws_iam_role.int_tableau.id
-  policy_arn = "arn:aws:iam::797728447925:policy/dq-tf-infra-write-to-cw"
+  policy_arn = "arn:aws:iam:${var.region}::policy/dq-tf-infra-write-to-cw"
 }
-
 
 resource "aws_iam_role_policy" "int_tableau" {
   role = aws_iam_role.int_tableau.id

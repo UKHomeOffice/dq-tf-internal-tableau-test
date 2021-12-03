@@ -1,3 +1,7 @@
+variable "region" {
+  default = "eu-west-2"
+}
+
 variable "naming_suffix" {
   default     = false
   description = "Naming suffix for tags, value passed from dq-tf-apps"
@@ -207,4 +211,3 @@ variable "lambda_subnet_az2" {
 variable "rds_enhanced_monitoring_role" {
   description = "ARN of the RDS enhanced monitoring role"
 }
-
