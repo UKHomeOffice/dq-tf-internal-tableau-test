@@ -183,7 +183,7 @@ variable "port" {
 }
 
 variable "environment" {
-  default     = "notprod"
+  default     = "preprod"
   description = "Switch between environments"
 }
 
