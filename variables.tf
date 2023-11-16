@@ -1,7 +1,3 @@
-variable "region" {
-  default = "eu-west-2"
-}
-
 variable "account_id" {
   type = map(string)
   default = {
@@ -172,6 +168,10 @@ variable "haproxy_private_ip" {
   description = "IP of HaProxy 1"
 }
 
+variable "haproxy_private_ip2" {
+  description = "IP of HaProxy 2"
+}
+
 variable "database_name" {
   default     = "internal_tableau"
   description = "RDS Postgres database name"
@@ -196,13 +196,9 @@ variable "s3_httpd_config_bucket_key" {
 }
 
 variable "dq_internal_staging_dashboard_instance_ip" {
-  description = "IP for staging instance"
-  default     = "10.1.12.115"
-}
-
-variable "dq_tableau_wip_dashboard_instance_ip" {
-  description = "IP for wip instance"
-  default     = "10.1.12.116"
+  description = "IP address of Tab STG EC2 instance"
+  type        = list(string)
+  default     = ["10.1.12.115", "10.1.12.116", "10.1.12.117", "10.1.12.118"]
 }
 
 variable "security_group_ids" {
@@ -219,4 +215,74 @@ variable "lambda_subnet_az2" {
 
 variable "rds_enhanced_monitoring_role" {
   description = "ARN of the RDS enhanced monitoring role"
+}
+
+# variable "region" {
+#   default = "eu-west-2"
+# }
+#
+# variable "account_id" {
+#   type = map(string)
+#   default = {
+#     "notprod" = "483846886818"
+#     "prod"    = "337779336338"
+#   }
+# }
+#
+# variable "kms_key_s3" {
+#   type        = map(string)
+#   description = "The ARN of the KMS key that is used to encrypt S3 buckets"
+#   default = {
+#     notprod = "arn:aws:kms:eu-west-2:483846886818:key/24b0cd4f-3117-4e9b-ada8-fa46e7fd6d70"
+#     prod    = "arn:aws:kms:eu-west-2:337779336338:key/ae75113d-f4f6-49c6-a15e-e8493fda0453"
+#   }
+# }
+#
+# locals {
+#   path_module = var.path_module != "unset" ? var.path_module : path.module
+# }
+#
+# variable "path_module" {
+#   default = "unset"
+# }
+
+############################
+#Cloudwatch Alarm variables#
+############################
+
+variable "pipeline_name" {
+  default = "internal-tableau-alarms"
+}
+
+variable "swap_alarm" {
+  description = "Switch to turn off Swap monitoring (required for MSSQL). Accepted values are 'false' to turn off and 'true' to excplicitly turn on"
+  default     = "true"
+}
+
+variable "path_module" {
+  default = "unset"
+}
+
+variable "ec2_instance_id_0" {
+  default     = "aws_instance.ext_tableau_linux[0]"
+  description = "The instance ID of the RDS database instance that you want to monitor."
+  type        = string
+}
+
+variable "cpu_utilization_threshold" {
+  description = "The maximum percentage of CPU utilization."
+  type        = string
+  default     = 80
+}
+
+variable "available_memory_threshold" {
+  description = "The percentage of available memory."
+  type        = string
+  default     = 20
+}
+
+variable "used_storage_space_threshold" {
+  description = "The minimum amount of available storage space in Byte."
+  type        = string
+  default     = 80
 }

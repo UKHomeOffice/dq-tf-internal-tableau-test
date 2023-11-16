@@ -4,67 +4,20 @@ data "aws_ami" "int_tableau_linux" {
   filter {
     name = "name"
 
+    # "dq-tableau-linux-nnn" is used to pull exact image
+    # "copied from*" is used to pull copy of nnn image copied to NotProd/Prod
     values = [
-      "dq-tableau-linux-205*",
+      "dq-tableau-linux-722 copied from*"
     ]
   }
 
+  # "self" is used to ensure that NotProd uses image copied to NotProd account
+  # and Prod uses image copied to Prod account
   owners = [
-    "self",
-  ]
-}
-
-data "aws_ami" "int_tableau_linux_upgrade" {
-  most_recent = true
-
-  filter {
-    name = "name"
-
-    values = [
-      "dq-tableau-linux-207*",
-    ]
-  }
-
-  owners = [
-    "self",
+    "self"
   ]
 }
 
 data "aws_kms_key" "rds_kms_key" {
   key_id = "alias/aws/rds"
-}
-
-data "aws_subnet" "sub_dq_internal_dashboard_subnet_cidr" {
-  filter {
-    name   = "tag:Name"
-    values = ["subnet-internal-tableau-apps-*"]    
-  }
-}
-
-data "aws_subnet" "sub_dq_internal_dashboard_subnet_cidr_az2" {
-  filter {
-    name   = "tag:Name"
-    values = ["az2-subnet-internal-tableau-apps-*"]    
-  }
-}
-
-data "aws_subnet" "sub_dq_external_dashboard_subnet_cidr" {
-  filter {
-    name   = "tag:Name"
-    values = ["subnet-external-tableau-apps-*"]    
-  }
-}
-
-data "aws_subnet" "sub_dq_lambda_apps_cidr" {
-  filter {
-    name   = "tag:Name"
-    values = ["subnet-lambda-apps-*"]    
-  }
-}
-
-data "aws_subnet" "sub_dq_lambda_apps_cidr_az2" {
-  filter {
-    name   = "tag:Name"
-    values = ["az2-subnet-lambda-apps-*"]    
-  }
 }

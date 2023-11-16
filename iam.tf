@@ -1,5 +1,5 @@
 resource "aws_iam_role" "int_tableau" {
-  name               = "int-tableau"
+  name               = "internal-tableau"
   assume_role_policy = <<EOF
 {
   "Version": "2012-10-17",
@@ -8,8 +8,8 @@ resource "aws_iam_role" "int_tableau" {
       "Effect": "Allow",
       "Principal": {
         "Service": [
-                   "ec2.amazonaws.com",
-                   "s3.amazonaws.com"
+                    "ec2.amazonaws.com",
+                    "s3.amazonaws.com"
         ]
       },
       "Action": "sts:AssumeRole"
@@ -20,13 +20,7 @@ EOF
 
 }
 
-resource "aws_iam_role_policy_attachment" "dq_tf_infra_write_to_cw" {
-  role       = aws_iam_role.int_tableau.id
-  policy_arn = "arn:aws:iam::${var.account_id[var.environment]}:policy/dq-tf-infra-write-to-cw"
-}
-
-resource "aws_iam_role_policy" "int_tableau" {
-  role = aws_iam_role.int_tableau.id
+resource "aws_iam_policy" "int_tableau" {
 
   policy = <<EOF
 {
@@ -66,10 +60,6 @@ resource "aws_iam_role_policy" "int_tableau" {
         "arn:aws:ssm:eu-west-2:*:parameter/tableau_int_staging_openid_client_secret",
         "arn:aws:ssm:eu-west-2:*:parameter/tableau_int_staging_openid_provider_config_url",
         "arn:aws:ssm:eu-west-2:*:parameter/tableau_int_staging_openid_tableau_server_external_url",
-        "arn:aws:ssm:eu-west-2:*:parameter/tableau_wip_openid_provider_client_id",
-        "arn:aws:ssm:eu-west-2:*:parameter/tableau_wip_openid_client_secret",
-        "arn:aws:ssm:eu-west-2:*:parameter/tableau_wip_openid_provider_config_url",
-        "arn:aws:ssm:eu-west-2:*:parameter/tableau_wip_openid_tableau_server_external_url",
         "arn:aws:ssm:eu-west-2:*:parameter/tableau_int_product_key_1",
         "arn:aws:ssm:eu-west-2:*:parameter/tableau_int_product_key_2",
         "arn:aws:ssm:eu-west-2:*:parameter/tableau_int_product_key_3",
@@ -83,7 +73,8 @@ resource "aws_iam_role_policy" "int_tableau" {
         "arn:aws:ssm:eu-west-2:*:parameter/rds_internal_tableau_service_username",
         "arn:aws:ssm:eu-west-2:*:parameter/rds_internal_tableau_service_password",
         "arn:aws:ssm:eu-west-2:*:parameter/rds_internal_tableau_username",
-        "arn:aws:ssm:eu-west-2:*:parameter/rds_internal_tableau_password"
+        "arn:aws:ssm:eu-west-2:*:parameter/rds_internal_tableau_password",
+        "arn:aws:ssm:eu-west-2:*:parameter/tableau_config_smtp_int"
       ]
     },
     {
@@ -99,8 +90,12 @@ EOF
 
 }
 
-resource "aws_iam_role_policy" "int_tableau_s3" {
-  role = aws_iam_role.int_tableau.id
+resource "aws_iam_role_policy_attachment" "int_tableau" {
+  role       = aws_iam_role.int_tableau.id
+  policy_arn = aws_iam_policy.int_tableau.arn
+}
+
+resource "aws_iam_policy" "int_tableau_s3" {
 
   policy = <<EOF
 {
@@ -150,6 +145,21 @@ EOF
 
 }
 
+resource "aws_iam_role_policy_attachment" "int_tableau_s3" {
+  role       = aws_iam_role.int_tableau.id
+  policy_arn = aws_iam_policy.int_tableau_s3.arn
+}
+
 resource "aws_iam_instance_profile" "int_tableau" {
   role = aws_iam_role.int_tableau.name
+}
+
+resource "aws_iam_role_policy_attachment" "cloud_watch_agent" {
+  role       = aws_iam_role.int_tableau.name
+  policy_arn = "arn:aws:iam::aws:policy/CloudWatchAgentServerPolicy"
+}
+
+resource "aws_iam_role_policy_attachment" "dq_tf_infra_write_to_cw" {
+  role       = aws_iam_role.int_tableau.id
+  policy_arn = "arn:aws:iam::${var.account_id[var.environment]}:policy/dq-tf-infra-write-to-cw"
 }
