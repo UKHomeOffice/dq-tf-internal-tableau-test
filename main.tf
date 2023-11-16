@@ -217,7 +217,7 @@ EOF
 
 resource "aws_subnet" "subnet" {
   vpc_id            = var.apps_vpc_id
-  cidr_block        = data.aws_subnets.sub_dq_internal_dashboard_subnet_cidr.ids
+  cidr_block        = var.dq_internal_dashboard_subnet_cidr
   availability_zone = var.az
 
   tags = {
