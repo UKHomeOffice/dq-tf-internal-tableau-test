@@ -50,7 +50,7 @@ x-anchors:
     - ls -la
     - echo $PATH
 #    - source /drone/src/$${AWS_SECRETS_FILE}
-    - source $${AWS_SECRETS_FILE}
+#    - source $${AWS_SECRETS_FILE}
     - source ./$${AWS_SECRETS_FILE}
     - python -m unittest tests/*_test.py
 
