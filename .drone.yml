@@ -76,7 +76,7 @@ steps:
 - name: run-testrunner-tests
   pull: if-not-exists
   image: *testrunner-image
-  commands:
+  commands: *run-testrunner
   environment:
     AWS_ENV: test
   when:
