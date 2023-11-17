@@ -63,9 +63,6 @@ steps:
 - name: run-testrunner-tests
   pull: if-not-exists
   image: *testrunner-image
-  commands:
-  - export AWS_SECRETS_FILE="set_aws_secrets_state.sh"
-  - source $${AWS_SECRETS_FILE}
   when:
     event:
       - push
