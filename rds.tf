@@ -1,8 +1,7 @@
 locals {
-  internal_reporting_dev_count     = var.environment == "prod" ? "0" : "1"
-  internal_reporting_qa_count      = var.environment == "prod" ? "0" : "1"
-  internal_reporting_stg_count     = var.environment == "prod" ? "1" : "1"
-  internal_reporting_wip_count     = var.environment == "prod" ? "1" : "1"
+  internal_reporting_dev_count     = var.environment == "prod" ? "0" : "0"
+  internal_reporting_qa_count      = var.environment == "prod" ? "0" : "0"
+  internal_reporting_stg_count     = var.environment == "prod" ? "1" : "0"
   internal_reporting_upgrade_count = var.environment == "prod" ? "0" : "1"
 }
 
@@ -97,28 +96,37 @@ EOF
 
 }
 
+resource "aws_iam_role_policy_attachment" "dq_tf_infra_write_to_cw_rds" {
+  role       = aws_iam_role.postgres.id
+  policy_arn = "arn:aws:iam::${var.account_id[var.environment]}:policy/dq-tf-infra-write-to-cw"
+}
+
 resource "aws_db_instance" "postgres" {
   identifier                      = "postgres-${local.naming_suffix}"
-  snapshot_identifier             = "int-tableau-postgres-internal-tableau-apps-test-dq-final-snapshot"
-  allocated_storage               = "350"
+  auto_minor_version_upgrade      = "false"
+  allocated_storage               = var.environment == "prod" ? "3630" : "3630"
   storage_type                    = "gp2"
   engine                          = "postgres"
-  engine_version                  = "10.17"
-  instance_class                  = "db.m5.2xlarge"
+  engine_version                  = var.environment == "prod" ? "14.7" : "14.7"
+  instance_class                  = var.environment == "prod" ? "db.m5.4xlarge" : "db.m5.4xlarge"
   enabled_cloudwatch_logs_exports = ["postgresql", "upgrade"]
   username                        = random_string.username.result
   password                        = random_string.password.result
   name                            = var.database_name
   port                            = var.port
-  backup_window                   = "07:00-08:00"
-  maintenance_window              = "mon:08:00-mon:09:00"
+  backup_window                   = var.environment == "prod" ? "00:00-01:00" : "07:00-08:00"
+  maintenance_window              = var.environment == "prod" ? "mon:22:00-mon:23:00" : "mon:08:00-mon:09:00"
   backup_retention_period         = 14
   deletion_protection             = true
   storage_encrypted               = true
-  multi_az                        = false
+  multi_az                        = var.environment == "prod" ? "true" : "false"
   skip_final_snapshot             = true
-  apply_immediately               = "true"
-  ca_cert_identifier              = "rds-ca-2019"
+  apply_immediately               = var.environment == "prod" ? "false" : "true"
+  ca_cert_identifier              = var.environment == "prod" ? "rds-ca-2019" : "rds-ca-2019"
+
+  performance_insights_enabled          = true
+  performance_insights_retention_period = "7"
+  parameter_group_name                  = var.environment == "prod" ? "postgres14-mem" : "default.postgres14"
 
   monitoring_interval = "60"
   monitoring_role_arn = var.rds_enhanced_monitoring_role
@@ -129,8 +137,7 @@ resource "aws_db_instance" "postgres" {
   lifecycle {
     prevent_destroy = true
     ignore_changes = [
-      username,
-      password,
+      engine_version,
     ]
   }
 
@@ -151,175 +158,142 @@ module "rds_alarms" {
   write_latency_threshold      = 1            # 1 second
 }
 
-# resource "aws_db_instance" "internal_reporting_snapshot_dev" {
-#   count                               = "${local.internal_reporting_dev_count}"
-#   snapshot_identifier                 = "internal-reporting-20190320-1133"
-#   auto_minor_version_upgrade          = "true"
-#   backup_retention_period             = "14"
-#   copy_tags_to_snapshot               = "false"
-#   db_subnet_group_name                = "${aws_db_subnet_group.rds.id}"
-#   deletion_protection                 = "false"
-#   enabled_cloudwatch_logs_exports     = ["postgresql", "upgrade"]
-#   iam_database_authentication_enabled = "false"
-#   identifier                          = "dev-postgres-${local.naming_suffix}"
-#   instance_class                      = "db.t3.large"
-#   iops                                = "0"
-#   kms_key_id                          = "${data.aws_kms_key.rds_kms_key.arn}"
-#   license_model                       = "postgresql-license"
-#   backup_window                       = "${var.environment == "prod" ? "00:00-01:00" : "07:00-08:00"}"
-#   maintenance_window                  = "${var.environment == "prod" ? "mon:01:00-mon:02:00" : "mon:08:00-mon:09:00"}"
-#   multi_az                            = "true"
-#   port                                = "5432"
-#   publicly_accessible                 = "false"
-#   skip_final_snapshot                 = true
-#   storage_encrypted                   = true
-#   storage_type                        = "gp2"
-#   vpc_security_group_ids              = ["${aws_security_group.internal_tableau_db.id}"]
-#   ca_cert_identifier                  = "${var.environment == "prod" ? "rds-ca-2019" : "rds-ca-2019"}"
-#   engine_version                      = "${var.environment == "prod" ? "10.6" : "10.10"}"
-#   apply_immediately                   = "${var.environment == "prod" ? "false" : "true"}"
+#resource "aws_db_instance" "internal_reporting_snapshot_dev" {
+#  count                               = local.internal_reporting_dev_count
+#  snapshot_identifier                 = "internal-reporting-20190320-1133"
+#  auto_minor_version_upgrade          = "true"
+#  backup_retention_period             = "14"
+#  copy_tags_to_snapshot               = "false"
+#  db_subnet_group_name                = aws_db_subnet_group.rds.id
+#  deletion_protection                 = "false"
+#  enabled_cloudwatch_logs_exports     = ["postgresql", "upgrade"]
+#  iam_database_authentication_enabled = "false"
+#  identifier                          = "dev-postgres-${local.naming_suffix}"
+#  instance_class                      = "db.t3.large"
+#  iops                                = "0"
+#  kms_key_id                          = data.aws_kms_key.rds_kms_key.arn
+#  license_model                       = "postgresql-license"
+#  backup_window                       = var.environment == "prod" ? "00:00-01:00" : "07:00-08:00"
+#  maintenance_window                  = var.environment == "prod" ? "mon:01:00-mon:02:00" : "mon:08:00-mon:09:00"
+#  multi_az                            = var.environment == "prod" ? "true" : "false"
+#  port                                = "5432"
+#  publicly_accessible                 = "false"
+#  skip_final_snapshot                 = true
+#  storage_encrypted                   = true
+#  storage_type                        = "gp2"
+#  vpc_security_group_ids              = [aws_security_group.internal_tableau_db.id]
+#  ca_cert_identifier                  = var.environment == "prod" ? "rds-ca-2019" : "rds-ca-2019"
+#  engine_version                      = var.environment == "prod" ? "10.6" : "10.13"
+#  apply_immediately                   = var.environment == "prod" ? "false" : "true"
 #
-#   monitoring_interval = "60"
-#   monitoring_role_arn = "${var.rds_enhanced_monitoring_role}"
+#  performance_insights_enabled          = true
+#  performance_insights_retention_period = "7"
 #
-#   lifecycle {
-#     prevent_destroy = true
-#   }
+#  monitoring_interval = "60"
+#  monitoring_role_arn = var.rds_enhanced_monitoring_role
 #
-#   tags {
-#     Name = "dev-postgres-${local.naming_suffix}"
-#   }
-# }
+#  lifecycle {
+#    prevent_destroy = true
+#  }
 #
-# resource "aws_db_instance" "internal_reporting_snapshot_qa" {
-#   count                               = "${local.internal_reporting_qa_count}"
-#   snapshot_identifier                 = "internal-reporting-20190318-1328"
-#   auto_minor_version_upgrade          = "true"
-#   backup_retention_period             = "14"
-#   copy_tags_to_snapshot               = "false"
-#   db_subnet_group_name                = "${aws_db_subnet_group.rds.id}"
-#   deletion_protection                 = "false"
-#   enabled_cloudwatch_logs_exports     = ["postgresql", "upgrade"]
-#   iam_database_authentication_enabled = "false"
-#   identifier                          = "qa-postgres-${local.naming_suffix}"
-#   instance_class                      = "db.t3.large"
-#   iops                                = "0"
-#   kms_key_id                          = "${data.aws_kms_key.rds_kms_key.arn}"
-#   license_model                       = "postgresql-license"
-#   backup_window                       = "${var.environment == "prod" ? "00:00-01:00" : "07:00-08:00"}"
-#   maintenance_window                  = "${var.environment == "prod" ? "mon:01:00-mon:02:00" : "mon:08:00-mon:09:00"}"
-#   multi_az                            = "true"
-#   port                                = "5432"
-#   publicly_accessible                 = "false"
-#   skip_final_snapshot                 = true
-#   storage_encrypted                   = true
-#   storage_type                        = "gp2"
-#   vpc_security_group_ids              = ["${aws_security_group.internal_tableau_db.id}"]
-#   ca_cert_identifier                  = "${var.environment == "prod" ? "rds-ca-2019" : "rds-ca-2019"}"
-#   engine_version                      = "${var.environment == "prod" ? "10.6" : "10.10"}"
-#   apply_immediately                   = "${var.environment == "prod" ? "false" : "true"}"
+#  tags = {
+#    Name = "dev-postgres-${local.naming_suffix}"
+#  }
+#}
 #
-#   monitoring_interval = "60"
-#   monitoring_role_arn = "${var.rds_enhanced_monitoring_role}"
+#resource "aws_db_instance" "internal_reporting_snapshot_qa" {
+#  count                               = local.internal_reporting_qa_count
+#  snapshot_identifier                 = "internal-reporting-20190318-1328"
+#  auto_minor_version_upgrade          = "true"
+#  backup_retention_period             = "14"
+#  copy_tags_to_snapshot               = "false"
+#  db_subnet_group_name                = aws_db_subnet_group.rds.id
+#  deletion_protection                 = "false"
+#  enabled_cloudwatch_logs_exports     = ["postgresql", "upgrade"]
+#  iam_database_authentication_enabled = "false"
+#  identifier                          = "qa-postgres-${local.naming_suffix}"
+#  instance_class                      = "db.t3.large"
+#  iops                                = "0"
+#  kms_key_id                          = data.aws_kms_key.rds_kms_key.arn
+#  license_model                       = "postgresql-license"
+#  backup_window                       = var.environment == "prod" ? "00:00-01:00" : "07:00-08:00"
+#  maintenance_window                  = var.environment == "prod" ? "mon:01:00-mon:02:00" : "mon:08:00-mon:09:00"
+#  multi_az                            = var.environment == "prod" ? "true" : "false"
+#  port                                = "5432"
+#  publicly_accessible                 = "false"
+#  skip_final_snapshot                 = true
+#  storage_encrypted                   = true
+#  storage_type                        = "gp2"
+#  vpc_security_group_ids              = [aws_security_group.internal_tableau_db.id]
+#  ca_cert_identifier                  = var.environment == "prod" ? "rds-ca-2019" : "rds-ca-2019"
+#  engine_version                      = var.environment == "prod" ? "10.6" : "10.13"
+#  apply_immediately                   = var.environment == "prod" ? "false" : "true"
 #
-#   lifecycle {
-#     prevent_destroy = true
-#   }
+#  performance_insights_enabled          = true
+#  performance_insights_retention_period = "7"
 #
-#   tags {
-#     Name = "qa-postgres-${local.naming_suffix}"
-#   }
-# }
+#  monitoring_interval = "60"
+#  monitoring_role_arn = var.rds_enhanced_monitoring_role
 #
-# resource "aws_db_instance" "internal_reporting_snapshot_stg" {
-#   count                               = "${local.internal_reporting_stg_count}"
-#   snapshot_identifier                 = "${var.environment == "prod" ? "rds:postgres-internal-tableau-apps-prod-dq-2020-03-23-00-07" : "rds:postgres-internal-tableau-apps-notprod-dq-2020-03-23-07-07"}"
-#   auto_minor_version_upgrade          = "true"
-#   backup_retention_period             = "14"
-#   copy_tags_to_snapshot               = "false"
-#   db_subnet_group_name                = "${aws_db_subnet_group.rds.id}"
-#   deletion_protection                 = "false"
-#   enabled_cloudwatch_logs_exports     = ["postgresql", "upgrade"]
-#   iam_database_authentication_enabled = "false"
-#   identifier                          = "stg-postgres-${local.naming_suffix}"
-#   instance_class                      = "${var.environment == "prod" ? "db.m5.4xlarge" : "db.m5.2xlarge"}"
-#   iops                                = "0"
-#   kms_key_id                          = "${data.aws_kms_key.rds_kms_key.arn}"
-#   license_model                       = "postgresql-license"
-#   backup_window                       = "${var.environment == "prod" ? "00:00-01:00" : "07:00-08:00"}"
-#   maintenance_window                  = "${var.environment == "prod" ? "tue:01:00-tue:02:00" : "mon:08:00-mon:09:00"}"
-#   multi_az                            = "true"
-#   port                                = "5432"
-#   publicly_accessible                 = "false"
-#   skip_final_snapshot                 = true
-#   storage_encrypted                   = true
-#   storage_type                        = "gp2"
-#   vpc_security_group_ids              = ["${aws_security_group.internal_tableau_db.id}"]
-#   ca_cert_identifier                  = "${var.environment == "prod" ? "rds-ca-2019" : "rds-ca-2019"}"
-#   monitoring_interval                 = "60"
-#   monitoring_role_arn                 = "${var.rds_enhanced_monitoring_role}"
-#   engine_version                      = "${var.environment == "prod" ? "10.10" : "10.10"}"
-#   apply_immediately                   = "${var.environment == "prod" ? "false" : "true"}"
+#  lifecycle {
+#    prevent_destroy = true
+#  }
 #
-#   lifecycle {
-#     prevent_destroy = true
-#   }
+#  tags = {
+#    Name = "qa-postgres-${local.naming_suffix}"
+#  }
+#}
 #
-#   tags {
-#     Name = "stg-postgres-${local.naming_suffix}"
-#   }
-# }
+#resource "aws_db_instance" "internal_reporting_snapshot_stg" {
+#  count                               = local.internal_reporting_stg_count
+#  snapshot_identifier                 = var.environment == "prod" ? "rds:postgres-internal-tableau-apps-prod-dq-2023-09-06-00-08" : "rds:postgres-internal-tableau-apps-notprod-dq-2022-05-05-07-08"
+#  auto_minor_version_upgrade          = "false"
+#  backup_retention_period             = "14"
+#  copy_tags_to_snapshot               = "false"
+#  db_subnet_group_name                = aws_db_subnet_group.rds.id
+#  deletion_protection                 = "true"
+#  enabled_cloudwatch_logs_exports     = ["postgresql", "upgrade"]
+#  iam_database_authentication_enabled = "false"
+#  identifier                          = "stg-postgres-${local.naming_suffix}"
+#  instance_class                      = var.environment == "prod" ? "db.m5.4xlarge" : "db.m5.2xlarge"
+#  iops                                = "0"
+#  kms_key_id                          = data.aws_kms_key.rds_kms_key.arn
+#  license_model                       = "postgresql-license"
+#  backup_window                       = var.environment == "prod" ? "00:00-01:00" : "07:00-08:00"
+#  maintenance_window                  = var.environment == "prod" ? "tue:01:00-tue:02:00" : "mon:08:00-mon:09:00"
+#  multi_az                            = var.environment == "prod" ? "false" : "false"
+#  port                                = "5432"
+#  publicly_accessible                 = "false"
+#  skip_final_snapshot                 = true
+#  storage_encrypted                   = true
+#  storage_type                        = "gp2"
+#  vpc_security_group_ids              = [aws_security_group.internal_tableau_db.id]
+#  ca_cert_identifier                  = var.environment == "prod" ? "rds-ca-2019" : "rds-ca-2019"
+#  monitoring_interval                 = "60"
+#  monitoring_role_arn                 = var.rds_enhanced_monitoring_role
+#  engine_version                      = var.environment == "prod" ? "10.18" : "10.18"
+#  apply_immediately                   = var.environment == "prod" ? "true" : "true"
 #
-# resource "aws_db_instance" "internal_reporting_snapshot_wip" {
-#   count                               = "${local.internal_reporting_wip_count}"
-#   snapshot_identifier                 = "${var.environment == "prod" ? "rds:postgres-internal-tableau-apps-prod-dq-2020-01-30-00-07" : "rds:postgres-internal-tableau-apps-notprod-dq-2020-01-30-07-07"}"
-#   allocated_storage                   = "${var.environment == "prod" ? "3300" : "300"}"
-#   auto_minor_version_upgrade          = "true"
-#   backup_retention_period             = "14"
-#   copy_tags_to_snapshot               = "false"
-#   db_subnet_group_name                = "${aws_db_subnet_group.rds.id}"
-#   deletion_protection                 = "false"
-#   enabled_cloudwatch_logs_exports     = ["postgresql", "upgrade"]
-#   iam_database_authentication_enabled = "false"
-#   identifier                          = "wip-postgres-${local.naming_suffix_wip}"
-#   instance_class                      = "${var.environment == "prod" ? "db.m5.4xlarge" : "db.m5.2xlarge"}"
-#   iops                                = "0"
-#   kms_key_id                          = "${data.aws_kms_key.rds_kms_key.arn}"
-#   license_model                       = "postgresql-license"
-#   backup_window                       = "${var.environment == "prod" ? "00:00-01:00" : "07:00-08:00"}"
-#   maintenance_window                  = "${var.environment == "prod" ? "tue:01:00-tue:02:00" : "mon:08:00-mon:09:00"}"
-#   multi_az                            = "true"
-#   port                                = "5432"
-#   publicly_accessible                 = "false"
-#   skip_final_snapshot                 = true
-#   storage_encrypted                   = true
-#   storage_type                        = "gp2"
-#   vpc_security_group_ids              = ["${aws_security_group.internal_tableau_db.id}"]
-#   ca_cert_identifier                  = "${var.environment == "prod" ? "rds-ca-2019" : "rds-ca-2019"}"
-#   monitoring_interval                 = "60"
-#   monitoring_role_arn                 = "${var.rds_enhanced_monitoring_role}"
-#   engine_version                      = "${var.environment == "prod" ? "10.6" : "10.10"}"
-#   apply_immediately                   = "${var.environment == "prod" ? "false" : "true"}"
+#  performance_insights_enabled          = true
+#  performance_insights_retention_period = "7"
+#  parameter_group_name                  = var.environment == "prod" ? "postgres14-mem" : "default.postgres14"
 #
-#   lifecycle {
-#     prevent_destroy = true
-#   }
+#  lifecycle {
+#    ignore_changes = [
+#      engine_version,
+#    ]
+#  }
 #
-#   tags {
-#     Name = "wip-postgres-${local.naming_suffix_wip}"
-#   }
-# }
+#  tags = {
+#    Name = "stg-postgres-${local.naming_suffix}"
+#  }
+#}
+
 
 resource "aws_ssm_parameter" "rds_internal_tableau_username" {
   name  = "rds_internal_tableau_username"
   type  = "SecureString"
   value = random_string.username.result
-
-  lifecycle {
-    ignore_changes = [
-      value,
-    ]
-  }
 }
 
 resource "aws_ssm_parameter" "rds_internal_tableau_password" {
@@ -357,30 +331,24 @@ resource "aws_ssm_parameter" "rds_internal_tableau_postgres_endpoint" {
   value = aws_db_instance.postgres.endpoint
 }
 
-# resource "aws_ssm_parameter" "rds_internal_tableau_dev_endpoint" {
-#   count = "${local.internal_reporting_dev_count}"
-#   name  = "rds_internal_tableau_dev_endpoint"
-#   type  = "String"
-#   value = "${aws_db_instance.internal_reporting_snapshot_dev.endpoint}"
-# }
+#resource "aws_ssm_parameter" "rds_internal_tableau_dev_endpoint" {
+#  count = local.internal_reporting_dev_count
+#  name  = "rds_internal_tableau_dev_endpoint"
+#  type  = "String"
+#  value = aws_db_instance.internal_reporting_snapshot_dev[0].endpoint
+#}
 #
-# resource "aws_ssm_parameter" "rds_internal_tableau_qa_endpoint" {
-#   count = "${local.internal_reporting_qa_count}"
-#   name  = "rds_internal_tableau_qa_endpoint"
-#   type  = "String"
-#   value = "${aws_db_instance.internal_reporting_snapshot_qa.endpoint}"
-# }
+#resource "aws_ssm_parameter" "rds_internal_tableau_qa_endpoint" {
+#  count = local.internal_reporting_qa_count
+#  name  = "rds_internal_tableau_qa_endpoint"
+#  type  = "String"
+#  value = aws_db_instance.internal_reporting_snapshot_qa[0].endpoint
+#}
 #
-# resource "aws_ssm_parameter" "rds_internal_tableau_stg_endpoint" {
-#   count = "${local.internal_reporting_stg_count}"
-#   name  = "rds_internal_tableau_stg_endpoint"
-#   type  = "String"
-#   value = "${aws_db_instance.internal_reporting_snapshot_stg.endpoint}"
-# }
-#
-# resource "aws_ssm_parameter" "rds_tableau_wip_endpoint" {
-#   count = "${local.internal_reporting_wip_count}"
-#   name  = "rds_tableau_wip_endpoint"
-#   type  = "String"
-#   value = "${aws_db_instance.internal_reporting_snapshot_wip.endpoint}"
-# }
+#resource "aws_ssm_parameter" "rds_internal_tableau_stg_endpoint" {
+#  count = local.internal_reporting_stg_count
+#  name  = "rds_internal_tableau_stg_endpoint"
+#  type  = "String"
+#  value = aws_db_instance.internal_reporting_snapshot_stg[0].endpoint
+#}
+
