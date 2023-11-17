@@ -32,6 +32,8 @@ x-anchors:
 #    - echo "export TF_VAR_ENV_ACCT_KEY=$${SECRET_KEY}" >> $${AWS_SECRETS_FILE}
 #    - echo "export AWS_DEFAULT_REGION=$${REGION}" >> $${AWS_SECRETS_FILE}
     # Get the AWS credentials - to allow TestRunner access to the Target Account
+    - echo "export AWS_ACCESS_KEY_ID=$${ACCESS_KEY}" > $${AWS_SECRETS_FILE}
+    - echo "export AWS_SECRET_ACCESS_KEY=$${SECRET_KEY}" >> $${AWS_SECRETS_FILE}
     - echo "export TF_VAR_AWS_ACCESS_KEY_ID=$${ACCESS_KEY}" > $${AWS_SECRETS_FILE}
     - echo "export TF_VAR_AWS_SECRET_ACCESS_KEY=$${SECRET_KEY}" >> $${AWS_SECRETS_FILE}
     - echo "export AWS_DEFAULT_REGION=$${REGION}" >> $${AWS_SECRETS_FILE}
