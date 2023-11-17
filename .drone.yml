@@ -44,6 +44,7 @@ steps:
   commands:
     *retrieve-deployment-aws-key
   environment:
+    AWS_ENV: test
     VAULT_ADDR:
       from_secret: VAULT_ADDR_DEV
     VAULT_TOKEN:
@@ -63,10 +64,17 @@ steps:
 - name: run-testrunner-tests
   pull: if-not-exists
   image: *testrunner-image
+  commands:
+    - # Get AWS secrets for Target Account
+      - export AWS_SECRETS_FILE="set_aws_secrets_$${AWS_ENV}.sh"
+      - source $${AWS_SECRETS_FILE}
+      - python -m unittest tests/*_test.py
+  environment:
+    AWS_ENV: test
   when:
     event:
       - push
 
 services:
   - name: docker
-    image: 340268328991.dkr.ecr.eu-west-2.amazonaws.com/acp/dind:latest
+    image: *acp-docker-image
