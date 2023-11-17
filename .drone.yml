@@ -63,6 +63,8 @@ steps:
 - name: run-testrunner-tests
   pull: if-not-exists
   image: *testrunner-image
+  commands:
+  - source ./set_aws_secrets.sh
   when:
     event:
       - push
