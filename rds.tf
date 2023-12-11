@@ -107,7 +107,7 @@ resource "aws_db_instance" "postgres" {
   allocated_storage               = var.environment == "prod" ? "3630" : "350"
   storage_type                    = "gp2"
   engine                          = "postgres"
-  engine_version                  = var.environment == "prod" ? "14.7" : "10.17"
+  engine_version                  = var.environment == "prod" ? "14.7" : "14.7"
   instance_class                  = var.environment == "prod" ? "db.m5.4xlarge" : "db.m5.2xlarge"
   enabled_cloudwatch_logs_exports = ["postgresql", "upgrade"]
   username                        = random_string.username.result
@@ -134,12 +134,12 @@ resource "aws_db_instance" "postgres" {
   db_subnet_group_name   = aws_db_subnet_group.rds.id
   vpc_security_group_ids = [aws_security_group.internal_tableau_db.id]
 
-  lifecycle {
-    prevent_destroy = true
-    ignore_changes = [
-      engine_version,
-    ]
-  }
+  # lifecycle {
+  #   prevent_destroy = true
+  #   ignore_changes = [
+  #     engine_version,
+  #   ]
+  # }
 
   tags = {
     Name = "rds-postgres-${local.naming_suffix}"
