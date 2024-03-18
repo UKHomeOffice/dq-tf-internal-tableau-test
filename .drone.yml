@@ -43,6 +43,14 @@ x-anchors:
     - source ./$${AWS_SECRETS_FILE}
     - python -m unittest tests/*_test.py
 
+  renew-vault-tokens: &renew-vault-tokens
+    # Renew the Dev Vault Token
+    - export VAULT_TOKEN=$${VAULT_TOKEN_DEV}
+    - export VAULT_ADDR=$${VAULT_ADDR_DEV}
+    - vault token renew > /dev/null
+    - unset VAULT_TOKEN
+
+
 steps:
 - name: retrieve_aws_secrets_test
   pull: if-not-exists
@@ -76,6 +84,21 @@ steps:
   when:
     event:
       - push
+    
+- name: renew-vault-tokens
+  pull: if-not-exists
+  image: *vault-image
+  commands: *renew-vault-tokens
+  environment:
+    VAULT_ADDR_DEV:
+      from_secret: VAULT_ADDR_DEV
+    VAULT_TOKEN_DEV:
+      from_secret: VAULT_TOKEN_DEV
+  when:
+    event:
+      - cron
+    cron:
+      - renew-vault-tokens
 
 services:
   - name: docker
