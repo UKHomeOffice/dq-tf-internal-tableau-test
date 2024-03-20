@@ -42,7 +42,7 @@ resource "random_string" "password" {
 resource "random_string" "username" {
   length  = 8
   special = false
-  number  = false
+  numeric = false
 }
 
 resource "aws_security_group" "internal_tableau_db" {
