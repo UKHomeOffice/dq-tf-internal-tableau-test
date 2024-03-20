@@ -304,7 +304,7 @@ resource "aws_ssm_parameter" "rds_internal_tableau_password" {
 resource "random_string" "service_username" {
   length  = 8
   special = false
-  numeric  = false
+  numeric = false
 }
 
 resource "random_string" "service_password" {
