@@ -243,7 +243,7 @@ variable "rds_enhanced_monitoring_role" {
 # }
 #
 variable "path_module" {
-   default = "unset"
+  default = "unset"
 }
 
 ############################
