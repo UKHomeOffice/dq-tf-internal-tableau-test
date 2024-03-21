@@ -242,9 +242,6 @@ variable "rds_enhanced_monitoring_role" {
 #   path_module = var.path_module != "unset" ? var.path_module : path.module
 # }
 #
-variable "path_module" {
-  default = "unset"
-}
 
 ############################
 #Cloudwatch Alarm variables#
