@@ -1,6 +1,6 @@
 data "archive_file" "lambda_slack_zip" {
   type        = "zip"
-  source_dir  = "${path.module}/alarms_lambda/slack"
+  source_file = "${path.module}/alarms_lambda/slack/slack.py"
   output_path = "${path.module}/alarms_lambda/slack/package/lambda.zip"
 }
 
