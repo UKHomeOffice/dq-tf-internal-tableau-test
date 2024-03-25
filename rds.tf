@@ -128,7 +128,7 @@ resource "aws_db_instance" "postgres" {
   parameter_group_name                  = var.environment == "prod" ? "postgres14-mem" : "default.postgres14"
 
   monitoring_interval = "60"
-  monitoring_role_arn = var.rds_enhanced_monitoring_role
+  # monitoring_role_arn = var.rds_enhanced_monitoring_role
 
   db_subnet_group_name   = aws_db_subnet_group.rds.id
   vpc_security_group_ids = [aws_security_group.internal_tableau_db.id]
