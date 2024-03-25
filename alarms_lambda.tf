@@ -2,7 +2,7 @@ data "archive_file" "lambda_slack_zip" {
   type        = "zip"
   source_dir  = "${path.module}/alarms_lambda/slack"
   output_path = "${path.module}/alarms_lambda/slack/package/lambda.zip"
-} 
+}
 
 resource "aws_lambda_permission" "with_sns" {
   statement_id  = "AllowExecutionFromSNS"
