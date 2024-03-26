@@ -39,6 +39,7 @@ x-anchors:
 
   run-testrunner: &run-testrunner
     # Get AWS secrets for Target Account
+    - export TF_LOG=TRACE
     - export AWS_SECRETS_FILE="set_aws_secrets_$${AWS_ENV}.sh"
     - source ./$${AWS_SECRETS_FILE}
     - python -m unittest tests/*_test.py
