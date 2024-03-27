@@ -38,6 +38,7 @@ x-anchors:
     - terraform fmt --diff --check
 
   refresh-state: &refresh-state
+    - terraform init 
     - terraform refresh
 
   run-testrunner: &run-testrunner
