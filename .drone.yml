@@ -37,10 +37,6 @@ x-anchors:
     - terraform --version
     - terraform fmt --diff --check
 
-  refresh-state: &refresh-state
-    - terraform init 
-    - terraform refresh
-
   run-testrunner: &run-testrunner
     # Get AWS secrets for Target Account
     - export AWS_SECRETS_FILE="set_aws_secrets_$${AWS_ENV}.sh"
@@ -75,14 +71,6 @@ steps:
   pull: always
   image: *testrunner-image
   commands: *check-format
-  when:
-    event:
-      - push
-
-- name: refresh-state
-  pull: always 
-  image: *testrunner-image
-  commands: *refresh-state
   when:
     event:
       - push
