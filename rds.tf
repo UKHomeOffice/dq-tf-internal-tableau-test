@@ -42,7 +42,7 @@ resource "random_string" "password" {
 resource "random_string" "username" {
   length  = 8
   special = false
-  number  = false
+  numeric = false
 }
 
 resource "aws_security_group" "internal_tableau_db" {
@@ -112,7 +112,6 @@ resource "aws_db_instance" "postgres" {
   enabled_cloudwatch_logs_exports = ["postgresql", "upgrade"]
   username                        = random_string.username.result
   password                        = random_string.password.result
-  name                            = var.database_name
   port                            = var.port
   backup_window                   = var.environment == "prod" ? "00:00-01:00" : "07:00-08:00"
   maintenance_window              = var.environment == "prod" ? "mon:22:00-mon:23:00" : "mon:08:00-mon:09:00"
@@ -129,7 +128,7 @@ resource "aws_db_instance" "postgres" {
   parameter_group_name                  = var.environment == "prod" ? "postgres14-mem" : "default.postgres14"
 
   monitoring_interval = "60"
-  monitoring_role_arn = var.rds_enhanced_monitoring_role
+  # monitoring_role_arn = var.rds_enhanced_monitoring_role
 
   db_subnet_group_name   = aws_db_subnet_group.rds.id
   vpc_security_group_ids = [aws_security_group.internal_tableau_db.id]
@@ -305,7 +304,7 @@ resource "aws_ssm_parameter" "rds_internal_tableau_password" {
 resource "random_string" "service_username" {
   length  = 8
   special = false
-  number  = false
+  numeric = false
 }
 
 resource "random_string" "service_password" {

@@ -1,7 +1,7 @@
 data "archive_file" "lambda_slack_zip" {
   type        = "zip"
-  source_dir  = "${local.path_module}/alarms_lambda/slack"
-  output_path = "${local.path_module}/alarms_lambda/slack/package/lambda.zip"
+  source_file = "lambda/slack/slack.py"
+  output_path = "lambda/slack/package/lambda.zip"
 }
 
 resource "aws_lambda_permission" "with_sns" {
@@ -13,7 +13,7 @@ resource "aws_lambda_permission" "with_sns" {
 }
 
 resource "aws_lambda_function" "lambda_slack" {
-  filename         = "${path.module}/alarms_lambda/slack/package/lambda.zip"
+  filename         = "${path.module}/lambda/slack/package/lambda.zip"
   function_name    = "${var.pipeline_name}-lambda-slack-${var.environment}"
   role             = aws_iam_role.lambda_role_slack.arn
   handler          = "slack.lambda_handler"
@@ -30,7 +30,7 @@ resource "aws_lambda_function" "lambda_slack" {
   lifecycle {
     ignore_changes = [
       filename,
-      last_modified,
+      # last_modified,
       # source_code_hash,
     ]
   }

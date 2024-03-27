@@ -1,8 +1,7 @@
 ---
 global-variables:
-  acp-docker-image: &acp-docker-image 340268328991.dkr.ecr.eu-west-2.amazonaws.com/acp/dind:latest
-  testrunner-image: &testrunner-image quay.io/ukhomeofficedigital/tf-testrunner:32
-#  testrunner-image: &testrunner-image quay.io/ukhomeofficedigital/tf-testrunner:TF1.5
+  # acp-docker-image: &acp-docker-image 340268328991.dkr.ecr.eu-west-2.amazonaws.com/acp/dind:latest
+  testrunner-image: &testrunner-image quay.io/ukhomeofficedigital/tf-testrunner:TF1.5
   vault-image: &vault-image docker.digital.homeoffice.gov.uk/dq/dq-vault-awscli:1.43
 
 kind: pipeline
@@ -35,13 +34,22 @@ x-anchors:
     - sleep 20
 
   check-format: &check-format
-    - docker run --rm -v $(pwd):/data -w /data hashicorp/terraform fmt --diff --check
+    - terraform --version
+    - terraform fmt --diff --check
 
   run-testrunner: &run-testrunner
     # Get AWS secrets for Target Account
     - export AWS_SECRETS_FILE="set_aws_secrets_$${AWS_ENV}.sh"
     - source ./$${AWS_SECRETS_FILE}
     - python -m unittest tests/*_test.py
+
+  renew-vault-tokens: &renew-vault-tokens
+    # Renew the Dev Vault Token
+    - export VAULT_TOKEN=$${VAULT_TOKEN_DEV}
+    - export VAULT_ADDR=$${VAULT_ADDR_DEV}
+    - vault token renew > /dev/null
+    - unset VAULT_TOKEN
+
 
 steps:
 - name: retrieve_aws_secrets_test
@@ -61,7 +69,7 @@ steps:
 
 - name: check-format
   pull: always
-  image: *acp-docker-image
+  image: *testrunner-image
   commands: *check-format
   when:
     event:
@@ -76,7 +84,18 @@ steps:
   when:
     event:
       - push
-
-services:
-  - name: docker
-    image: *acp-docker-image
+    
+- name: renew-vault-tokens
+  pull: if-not-exists
+  image: *vault-image
+  commands: *renew-vault-tokens
+  environment:
+    VAULT_ADDR_DEV:
+      from_secret: VAULT_ADDR_DEV
+    VAULT_TOKEN_DEV:
+      from_secret: VAULT_TOKEN_DEV
+  when:
+    event:
+      - cron
+    cron:
+      - renew-vault-tokens
