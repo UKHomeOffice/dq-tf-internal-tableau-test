@@ -13,3 +13,5 @@ terraform {
   }
 
 }
+#re-running CICD to confirm if ARN issue in dq-tf-apps when pulling this module is due to test.py configuration 
+# cicd drone should run without error if it is solely a test config issue 
