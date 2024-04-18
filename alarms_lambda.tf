@@ -1,5 +1,5 @@
 locals {
-  path_module         = var.path_module != "unset" ? var.path_module : path.module
+  path_module = var.path_module != "unset" ? var.path_module : path.module
 }
 
 data "archive_file" "lambda_slack_zip" {
