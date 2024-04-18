@@ -1,7 +1,7 @@
 data "archive_file" "lambda_slack_zip" {
   type        = "zip"
-  source_file = "${local.path_module}/lambda/slack/slack.py"
-  output_path = "${local.path_module}/lambda/slack/package/lambda.zip"
+  source_file = "${path.module}/lambda/slack/slack.py"
+  output_path = "${path.module}/lambda/slack/package/lambda.zip"
 }
 
 resource "aws_lambda_permission" "with_sns" {
