@@ -105,7 +105,7 @@ resource "aws_db_instance" "postgres" {
   identifier                      = "postgres-${local.naming_suffix}"
   auto_minor_version_upgrade      = "false"
   allocated_storage               = var.environment == "prod" ? "3630" : "350"
-  storage_type                    = "gp2"
+  storage_type                    = "gp3"
   engine                          = "postgres"
   engine_version                  = var.environment == "prod" ? "14.7" : "14.7"
   instance_class                  = var.environment == "prod" ? "db.m5.4xlarge" : "db.m5.2xlarge"
